@@ -1,4 +1,4 @@
-import { onMount, onCleanup, createSignal } from "solid-js";
+import { onMount, onCleanup, createSignal, createEffect } from "solid-js";
 import type { Feature, Point } from "geojson";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -178,7 +178,7 @@ export default function Home() {
     if (map) map.remove();
   });
 
-  createSignal(() => {
+  createEffect(() => {
     if (!map) return;
     updateEventLayer(dateRange());
   });
