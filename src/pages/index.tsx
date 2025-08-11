@@ -78,6 +78,7 @@ export default function Home() {
       style: baseStyle as any,
       center: [0, 0],
       zoom: 2,
+      maxZoom: 13,
       attributionControl: false,
     });
 
@@ -100,12 +101,14 @@ export default function Home() {
           features: [],
         },
         cluster: true,
-        clusterMaxZoom: 14,
-        clusterRadius: 30,
+        clusterMaxZoom: 11,
+        clusterRadius: 15, // 30
       });
 
       map.addLayer({
         id: "clusters",
+        minzoom: 0,
+        maxzoom: 14,
         type: "circle",
         source: "events",
         filter: ["has", "point_count"],
@@ -152,6 +155,8 @@ export default function Home() {
 
       map.addLayer({
         id: "unclustered-point",
+        minzoom: 0,
+        maxzoom: 14,
         type: "circle",
         source: "events",
         filter: ["!", ["has", "point_count"]],
