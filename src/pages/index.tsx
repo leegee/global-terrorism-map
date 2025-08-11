@@ -2,7 +2,9 @@ import { onMount, onCleanup } from "solid-js";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Feature, Point } from "geojson";
-import { initDB, queryEvents } from '../db';
+
+import { initDB, queryEvents } from '../lib/db';
+import { baseStyle } from '../lib/map-style';
 import HoverTooltip from "../components/HoverTooltip";
 
 export default function Home() {
@@ -54,39 +56,21 @@ export default function Home() {
 
     map = new maplibregl.Map({
       container: mapContainer,
-      style: {
-        version: 8,
-        glyphs: "fonts/{fontstack}/{range}.pbf",
-        sources: {
-          cartoDark: {
-            type: "raster",
-            tiles: [
-              "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-              "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-              "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-              "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-              "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-            ],
-            tileSize: 256,
-            attribution:
-              '© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          },
-        },
-        layers: [
-          {
-            id: "cartoDarkLayer",
-            type: "raster",
-            source: "cartoDark",
-            minzoom: 0,
-            maxzoom: 19,
-          },
-        ],
-      },
+      style: baseStyle as any, // ikr
       center: [0, 0],
       zoom: 2,
+      attributionControl: false,
     });
 
     map.getCanvas().style.cursor = "default";
+
+    map.addControl(
+      new maplibregl.AttributionControl({
+        compact: true,
+        customAttribution: 'Data © U. Maryland Global Terrorism Database',
+      }),
+      'bottom-right'
+    );
 
     map.on("load", () => {
       map.addSource("events", {
@@ -95,9 +79,9 @@ export default function Home() {
           type: "FeatureCollection",
           features: [],
         },
-        cluster: true,           // enable clustering
-        clusterMaxZoom: 14,      // max zoom to cluster points on
-        clusterRadius: 50,       // cluster radius in pixels
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 30,
       });
 
       // Cluster circles layer
@@ -110,11 +94,13 @@ export default function Home() {
           "circle-color": [
             "step",
             ["get", "point_count"],
-            "#51bbd6",    // <= 100 points
+            "#6a5acd55",
+            10,
+            "#483d8b55",
             100,
-            "#f1f075",    // <= 750 points
-            750,
-            "#f28cb1",    // > 750 points
+            "#7b68ee55",
+            1000,
+            "#9370db55",
           ],
           "circle-radius": [
             "step",
@@ -126,7 +112,7 @@ export default function Home() {
             40,
           ],
           "circle-stroke-width": 1,
-          "circle-stroke-color": "#fff",
+          "circle-stroke-color": "#fff5",
         },
       });
 
@@ -142,7 +128,7 @@ export default function Home() {
           "text-size": 12,
         },
         paint: {
-          "text-color": "#000",
+          "text-color": "#ddd",
         },
       });
 

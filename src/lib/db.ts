@@ -31,14 +31,12 @@ export function queryEvents(
     maxLat: number,
     minLon: number,
     maxLon: number,
-    limit = 1000
 ) {
     const stmt = db.prepare(`
     SELECT eventid, iyear, country_txt, latitude, longitude, summary
     FROM events
     WHERE latitude BETWEEN :minLat AND :maxLat
       AND longitude BETWEEN :minLon AND :maxLon
-    LIMIT :limit
   `);
 
     stmt.bind({
@@ -46,7 +44,6 @@ export function queryEvents(
         ':maxLat': maxLat,
         ':minLon': minLon,
         ':maxLon': maxLon,
-        ':limit': limit,
     });
 
     const rows: Array<Record<string, any>> = [];
