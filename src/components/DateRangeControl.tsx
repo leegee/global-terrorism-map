@@ -23,26 +23,28 @@ export function DateRangeControl(props: DateRangeControlProps) {
         <fieldset class={styles.component}>
             <legend>Date Range</legend>
 
-            <div class="field border label">
-                <input
-                    type="number"
-                    value={minDate()}
-                    onBlur={e => setMinDate(e.currentTarget.value)}
-                    min={1970}
-                    max={maxDate()}
-                />
-                <label>From</label>
-            </div>
+            <div class="row">
+                <div class="field border label">
+                    <input
+                        type="number"
+                        value={minDate()}
+                        onBlur={e => setMinDate(e.currentTarget.value)}
+                        min={1970}
+                        max={maxDate()}
+                    />
+                    <label>From</label>
+                </div>
 
-            <div class="field border label">
-                <input
-                    type="number"
-                    value={maxDate()}
-                    onBlur={e => setMaxDate(e.currentTarget.value)}
-                    min={minDate()}
-                    max={new Date().getFullYear().toString()}
-                />
-                <label>To</label>
+                <div class="field border label">
+                    <input
+                        type="number"
+                        value={maxDate()}
+                        onBlur={e => setMaxDate(e.currentTarget.value)}
+                        min={minDate()}
+                        max={new Date().getFullYear().toString()}
+                    />
+                    <label>To</label>
+                </div>
             </div>
         </fieldset>
     );

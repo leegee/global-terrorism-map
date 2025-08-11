@@ -2,14 +2,14 @@
     display: flex;
     flex-direction: row;
 
-    --usualSize: 12em;
+    --colWidth: 18em;
 
     .controls {
-        width: clamp(var(--usualSize), var(--usualSize), 20vw);
+        width: clamp(var(--colWidth), var(--colWidth), 20vw);
     }
 
     .map {
-        width: clamp(calc(100% - var(--usualSize)), calc(100% - var(--usualSize)), 80vw);
+        width: clamp(calc(100% - var(--colWidth)), calc(100% - var(--colWidth)), 80vw);
         height: 100vh;
     }
 }
