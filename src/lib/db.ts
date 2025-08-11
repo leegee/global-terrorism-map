@@ -126,11 +126,11 @@ export function queryEvents(
         });
     });
 
-    console.log(
-        "row count", fanned.length,
-        "from sql", sql,
-        "using bind", [minLat, maxLat, minLon, maxLon, start, end]
-    );
+    // console.log(
+    //     "row count", fanned.length,
+    //     "from sql", sql,
+    //     "using bind", [minLat, maxLat, minLon, maxLon, start, end]
+    // );
 
     return fanned;
 }
