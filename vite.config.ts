@@ -9,10 +9,15 @@ export default defineConfig({
     }),
     solidPlugin(),
   ],
-  server: {
-    port: 3000,
-  },
+
   build: {
     target: 'esnext',
+  },
+  worker: {
+    format: 'es',
+  },
+
+  server: {
+    port: 3000,
   },
 });

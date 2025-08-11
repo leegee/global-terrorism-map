@@ -1,21 +1,56 @@
-import { onMount } from "solid-js";
+import { onMount, onCleanup } from "solid-js";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { Feature, Point } from "geojson";
+import { initDB, queryEvents } from '../db';
 
 export default function Home() {
   let mapContainer: HTMLDivElement | undefined;
+  let map: maplibregl.Map | undefined;
+  let db: any;
 
-  onMount(() => {
+  async function updateEvents() {
+    if (!map || !db) return;
+
+    const bounds = map.getBounds();
+    const minLat = bounds.getSouth();
+    const maxLat = bounds.getNorth();
+    const minLon = bounds.getWest();
+    const maxLon = bounds.getEast();
+
+    const rows = queryEvents(db, minLat, maxLat, minLon, maxLon);
+
+    const features: Feature<Point>[] = rows.map(
+      ({ eventid, iyear, country_txt, latitude, longitude, summary }) => ({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+        properties: {
+          eventid,
+          iyear,
+          country_txt,
+          summary,
+        },
+      })
+    );
+
+    const source = map.getSource("events") as maplibregl.GeoJSONSource;
+    if (source) {
+      source.setData({
+        type: "FeatureCollection",
+        features,
+      });
+    }
+  }
+
+  onMount(async () => {
     if (!mapContainer) return;
 
-    // const map = new maplibregl.Map({
-    //   container: mapContainer,
-    //   style: "https://demotiles.maplibre.org/style.json",
-    //   center: [0, 0],
-    //   zoom: 2,
-    // });
+    db = await initDB("/globalterrorismdb.sqlite");
 
-    const map = new maplibregl.Map({
+    map = new maplibregl.Map({
       container: mapContainer,
       style: {
         version: 8,
@@ -48,10 +83,35 @@ export default function Home() {
       zoom: 2,
     });
 
-    return () => map.remove();
+    map.on("load", () => {
+      map.addSource("events", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [],
+        },
+      });
+
+      map.addLayer({
+        id: "events-layer",
+        type: "circle",
+        source: "events",
+        paint: {
+          "circle-radius": 4,
+          "circle-color": "#f84c4c",
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "#fff",
+        },
+      });
+
+      updateEvents();
+      map.on("moveend", updateEvents);
+    });
   });
 
-  return (
-    <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer}></div>
-  );
+  onCleanup(() => {
+    if (map) map.remove();
+  });
+
+  return <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer}></div>;
 }

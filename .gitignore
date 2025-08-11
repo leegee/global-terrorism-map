@@ -30,3 +30,7 @@ Thumbs.db
 python/venv
 python/
 python/*.xlsx
+python/*.csv
+public/*.duckdb
+public/*.arrow
+public/*.sqlite
