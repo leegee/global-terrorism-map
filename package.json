@@ -1,7 +1,7 @@
 {
-  "name": "vite-template-solid",
-  "version": "0.0.0",
-  "description": "",
+  "name": "global-terrorism-map",
+  "version": "0.0.1",
+  "description": "Map (sans data) of the U Maryland Global terrorism Database",
   "type": "module",
   "scripts": {
     "start": "vite",
