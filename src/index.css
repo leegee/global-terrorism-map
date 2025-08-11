@@ -42,7 +42,20 @@
     border-radius: 8px !important;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
-    max-width: 280px !important;
+    /* max-width: 280px !important; */
+    width: clamp(20em, 30vw, 80vw) !important;
+    max-width: clamp(20em, 30vw, 80vw) !important;
+}
+
+.maplibregl-popup-content section {
+    width: 100%;
+    font-size: 12pt;
+    max-height: clamp(30em, 50vh, 80vh);
+    overflow-y: auto;
+}
+
+.maplibregl-popup-content th {
+    vertical-align: top;
 }
 
 .maplibregl-popup-tip {

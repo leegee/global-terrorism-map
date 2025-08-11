@@ -44,22 +44,14 @@ export default function Home() {
       startYear,
       endYear
     );
-
-    const features: Feature<Point>[] = rows.map(
-      ({ eventid, iyear, country_txt, latitude, longitude, summary }) => ({
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [longitude, latitude],
-        },
-        properties: {
-          eventid,
-          iyear,
-          country_txt,
-          summary,
-        },
-      })
-    );
+    const features: Feature<Point>[] = rows.map(row => ({
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [row.longitude, row.latitude],
+      },
+      properties: { ...row },
+    }));
 
     const source = map.getSource("events") as maplibregl.GeoJSONSource;
     if (source) {
@@ -178,21 +170,12 @@ export default function Home() {
           document.dispatchEvent(new CustomEvent("tooltip-hide"));
           return;
         }
-        const feature = features[0];
-        const props = feature.properties || {};
-
-        const html = `
-          <strong>Event ID:</strong> ${props.eventid || "N/A"}<br/>
-          <strong>Year:</strong> ${props.iyear || "N/A"}<br/>
-          <strong>Country:</strong> ${props.country_txt || "N/A"}<br/>
-          <em>${props.summary || ""}</em>
-        `;
 
         document.dispatchEvent(
           new CustomEvent("tooltip-show", {
             detail: {
               lngLat: e.lngLat,
-              html,
+              properties: features[0].properties || {},
             },
           })
         );
