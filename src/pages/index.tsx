@@ -19,11 +19,6 @@ export default function Home() {
     "2021",
   ]);
 
-  const [tooltipInfo, setTooltipInfo] = createSignal<{
-    lngLat: maplibregl.LngLat;
-    html: string;
-  } | null>(null);
-
   let mapContainer: HTMLDivElement | undefined;
   let map: maplibregl.Map | undefined;
   let db: any;
