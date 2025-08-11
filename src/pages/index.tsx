@@ -1,19 +1,31 @@
-import { onMount, onCleanup } from "solid-js";
+import { onMount, onCleanup, createSignal } from "solid-js";
+import type { Feature, Point } from "geojson";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { Feature, Point } from "geojson";
+import "beercss";
+import "material-dynamic-colors";
 
-import { initDB, queryEvents } from '../lib/db';
-import { baseStyle } from '../lib/map-style';
+import styles from "./index.module.scss";
+import { initDB, queryEvents } from "../lib/db";
+import { baseStyle } from "../lib/map-style";
 import HoverTooltip from "../components/HoverTooltip";
+import { DateRangeControl } from "../components/DateRangeControl";
 
 export default function Home() {
+  const [dateRange, setDateRange] = createSignal<[string, string]>([
+    "2023",
+    "2025",
+  ]);
+
   let mapContainer: HTMLDivElement | undefined;
   let map: maplibregl.Map | undefined;
   let db: any;
 
-  async function updateEvents() {
+  async function updateEventLayer(range?: [string, string]) {
     if (!map || !db) return;
+
+    const activeRange = range ?? dateRange();
+    const [startYear, endYear] = activeRange;
 
     const bounds = map.getBounds();
     const minLat = bounds.getSouth();
@@ -21,8 +33,15 @@ export default function Home() {
     const minLon = bounds.getWest();
     const maxLon = bounds.getEast();
 
-    // Load ALL events inside bounds - remove LIMIT to allow clustering on all
-    const rows = queryEvents(db, minLat, maxLat, minLon, maxLon);
+    const rows = queryEvents(
+      db,
+      minLat,
+      maxLat,
+      minLon,
+      maxLon,
+      startYear,
+      endYear
+    );
 
     const features: Feature<Point>[] = rows.map(
       ({ eventid, iyear, country_txt, latitude, longitude, summary }) => ({
@@ -56,7 +75,7 @@ export default function Home() {
 
     map = new maplibregl.Map({
       container: mapContainer,
-      style: baseStyle as any, // ikr
+      style: baseStyle as any,
       center: [0, 0],
       zoom: 2,
       attributionControl: false,
@@ -67,9 +86,10 @@ export default function Home() {
     map.addControl(
       new maplibregl.AttributionControl({
         compact: true,
-        customAttribution: 'Data © U. Maryland Global Terrorism Database',
+        customAttribution:
+          "Data © U. Maryland Global Terrorism Database",
       }),
-      'bottom-right'
+      "bottom-right"
     );
 
     map.on("load", () => {
@@ -84,7 +104,6 @@ export default function Home() {
         clusterRadius: 30,
       });
 
-      // Cluster circles layer
       map.addLayer({
         id: "clusters",
         type: "circle",
@@ -116,7 +135,6 @@ export default function Home() {
         },
       });
 
-      // Cluster count labels
       map.addLayer({
         id: "cluster-count",
         type: "symbol",
@@ -132,7 +150,6 @@ export default function Home() {
         },
       });
 
-      // Unclustered points
       map.addLayer({
         id: "unclustered-point",
         type: "circle",
@@ -146,8 +163,9 @@ export default function Home() {
         },
       });
 
-      updateEvents();
-      map.on("moveend", updateEvents);
+      updateEventLayer(dateRange());
+
+      map.on("moveend", () => updateEventLayer());
     });
   });
 
@@ -155,8 +173,27 @@ export default function Home() {
     if (map) map.remove();
   });
 
-  return <>
-    <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer}></div>;
-    {map && <HoverTooltip map={map} layerId="unclustered-point" />}
-  </>;
+  createSignal(() => {
+    if (!map) return;
+    updateEventLayer(dateRange());
+  });
+
+  return (
+    <>
+      <section class={styles.component}>
+        <aside class={styles.controls}>
+          <DateRangeControl
+            initialRange={dateRange()}
+            onChange={setDateRange}
+          />
+        </aside>
+
+        <div class={styles.map} ref={mapContainer}></div>
+
+        {map && (
+          <HoverTooltip map={map} layerId="unclustered-point" />
+        )}
+      </section>
+    </>
+  );
 }

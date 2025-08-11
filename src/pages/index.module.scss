@@ -1,0 +1,15 @@
+.component {
+    display: flex;
+    flex-direction: row;
+
+    --usualSize: 12em;
+
+    .controls {
+        width: clamp(var(--usualSize), var(--usualSize), 20vw);
+    }
+
+    .map {
+        width: clamp(calc(100% - var(--usualSize)), calc(100% - var(--usualSize)), 80vw);
+        height: 100vh;
+    }
+}
