@@ -1,4 +1,4 @@
-import { onMount, onCleanup, createSignal } from "solid-js";
+import { onMount, onCleanup } from "solid-js";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Feature, Point } from "geojson";
@@ -9,7 +9,6 @@ export default function Home() {
   let mapContainer: HTMLDivElement | undefined;
   let map: maplibregl.Map | undefined;
   let db: any;
-  const [mapReady, setMapReady] = createSignal(false);
 
   async function updateEvents() {
     if (!map || !db) return;
@@ -20,7 +19,8 @@ export default function Home() {
     const minLon = bounds.getWest();
     const maxLon = bounds.getEast();
 
-    const rows = await queryEvents(db, minLat, maxLat, minLon, maxLon);
+    // Load ALL events inside bounds - remove LIMIT to allow clustering on all
+    const rows = queryEvents(db, minLat, maxLat, minLon, maxLon);
 
     const features: Feature<Point>[] = rows.map(
       ({ eventid, iyear, country_txt, latitude, longitude, summary }) => ({
@@ -56,6 +56,7 @@ export default function Home() {
       container: mapContainer,
       style: {
         version: 8,
+        glyphs: "fonts/{fontstack}/{range}.pbf",
         sources: {
           cartoDark: {
             type: "raster",
@@ -85,6 +86,8 @@ export default function Home() {
       zoom: 2,
     });
 
+    map.getCanvas().style.cursor = "default";
+
     map.on("load", () => {
       map.addSource("events", {
         type: "geojson",
@@ -92,14 +95,63 @@ export default function Home() {
           type: "FeatureCollection",
           features: [],
         },
+        cluster: true,           // enable clustering
+        clusterMaxZoom: 14,      // max zoom to cluster points on
+        clusterRadius: 50,       // cluster radius in pixels
       });
 
-      map.getCanvas().style.cursor = "default";
-
+      // Cluster circles layer
       map.addLayer({
-        id: "events-layer",
+        id: "clusters",
         type: "circle",
         source: "events",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": [
+            "step",
+            ["get", "point_count"],
+            "#51bbd6",    // <= 100 points
+            100,
+            "#f1f075",    // <= 750 points
+            750,
+            "#f28cb1",    // > 750 points
+          ],
+          "circle-radius": [
+            "step",
+            ["get", "point_count"],
+            20,
+            100,
+            30,
+            750,
+            40,
+          ],
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "#fff",
+        },
+      });
+
+      // Cluster count labels
+      map.addLayer({
+        id: "cluster-count",
+        type: "symbol",
+        source: "events",
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": "{point_count_abbreviated}",
+          "text-font": ["Open Sans Regular"],
+          "text-size": 12,
+        },
+        paint: {
+          "text-color": "#000",
+        },
+      });
+
+      // Unclustered points
+      map.addLayer({
+        id: "unclustered-point",
+        type: "circle",
+        source: "events",
+        filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-radius": 4,
           "circle-color": "#f84c4c",
@@ -110,7 +162,6 @@ export default function Home() {
 
       updateEvents();
       map.on("moveend", updateEvents);
-      setMapReady(true);
     });
   });
 
@@ -119,7 +170,7 @@ export default function Home() {
   });
 
   return <>
-    <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer}></div>
-    {mapReady() && map && <HoverTooltip map={map} layerId="events-layer" />}
-  </>
+    <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer}></div>;
+    {map && <HoverTooltip map={map} layerId="unclustered-point" />}
+  </>;
 }

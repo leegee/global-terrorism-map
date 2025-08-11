@@ -34,3 +34,4 @@ python/*.csv
 public/*.duckdb
 public/*.arrow
 public/*.sqlite
+public/fonts/
