@@ -1,29 +1,25 @@
 import { onCleanup, onMount } from "solid-js";
 import maplibregl from "maplibre-gl";
-import styles from "./HoverTooltip.module.scss";
+import schema from '../scheme.json';
+// import styles from "./HoverTooltip.module.scss";
 
 interface HoverTooltipProps {
     map: maplibregl.Map;
 }
 
-const fields = {
-    "Event ID": "eventid",
-    "Year": "iyear",
-    "Country": "country_txt",
-    "Latitude": "latitude",
-    "Longitude": "longitude",
-    "Attack Type": "attacktype1_txt",
-    "Target Type": "targtype1_txt",
-    "Weapon Type": "weaptype1_txt",
-    "Killed": "nkill",
-    "Wounded": "nwound",
-    "Group Name": "gname",
-    "Motive": "motive",
-    "Claimed": "claimed",
-    "Success": "success",
-    "Summary": "summary"
+type FieldInfo = {
+    type: string;
+    display: string;
 };
 
+const columnTypes: Record<string, string> = {};
+const fields: Record<string, string> = {};
+
+for (const key in schema) {
+    const info: FieldInfo = schema[key];
+    columnTypes[key] = info.type;
+    fields[info.display] = key;
+}
 
 export default function HoverTooltip(props: HoverTooltipProps) {
     let popup: maplibregl.Popup | null = null;

@@ -1,0 +1,70 @@
+{
+    "eventid": {
+        "type": "INTEGER",
+        "display": "Event ID"
+    },
+    "iyear": {
+        "type": "INTEGER",
+        "display": "Year"
+    },
+    "country_txt": {
+        "type": "TEXT",
+        "display": "Country"
+    },
+    "latitude": {
+        "type": "REAL",
+        "display": "Latitude"
+    },
+    "longitude": {
+        "type": "REAL",
+        "display": "Longitude"
+    },
+    "summary": {
+        "type": "TEXT",
+        "display": "Summary"
+    },
+    "attacktype1_txt": {
+        "type": "TEXT",
+        "display": "Attack Type"
+    },
+    "targtype1_txt": {
+        "type": "TEXT",
+        "display": "Target Type"
+    },
+    "weaptype1_txt": {
+        "type": "TEXT",
+        "display": "Weapon Type"
+    },
+    "nkill": {
+        "type": "INTEGER",
+        "display": "Killed"
+    },
+    "nwound": {
+        "type": "INTEGER",
+        "display": "Wounded"
+    },
+    "gname": {
+        "type": "TEXT",
+        "display": "Group Name"
+    },
+    "motive": {
+        "type": "TEXT",
+        "display": "Motive"
+    },
+    "claimed": {
+        "type": "BOOLEAN",
+        "display": "Claimed"
+    },
+    "success": {
+        "type": "BOOLEAN",
+        "display": "Success"
+    },
+    "city": {
+        "type": "TEXT",
+        "display": "City"
+    },
+    "vicinity": {
+        "type": "TEXT",
+        "display": "Vicinity"
+    }
+}
