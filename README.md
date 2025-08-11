@@ -1,4 +1,18 @@
+# Map of the University of Maryland Global Terrorism Database
+
+At present, the GTD covers 1970 to 2022.
+
+![The World](./README/Screenshot%202025-08-11%20135244.png)
+
+![The UK](./README/Screenshot%202025-08-11%20135601-uk.png)
+
 ## Usage
+
+### Data
+
+You will need to request permission from the University of Maryland for the GTD download. 
+
+Place the contents of the zip into the `python` directory.
 
 ### DB
 
@@ -16,3 +30,10 @@ To create the browser-hosted SQLite in `public/`:
 The package at git@github.com:openmaptiles/fonts.git contains PBFs for fonts for cluster labels.
 
 Manually fetch the dist and copy into `public/fonts` the `Open Sans Regular/` directory.
+
+### Client
+
+In the project root:
+
+    bun install
+    bun dev
