@@ -9,7 +9,7 @@ interface DateRangeControlProps {
 }
 
 export function DateRangeControl(props: DateRangeControlProps) {
-    const [minDate, setMinDate] = createSignal(props.initialRange?.[0] ?? '1900');
+    const [minDate, setMinDate] = createSignal(props.initialRange?.[0] ?? '1970');
     const [maxDate, setMaxDate] = createSignal(props.initialRange?.[1] ?? new Date().getFullYear().toString());
 
     createEffect(() => {
@@ -28,7 +28,7 @@ export function DateRangeControl(props: DateRangeControlProps) {
                     type="number"
                     value={minDate()}
                     onBlur={e => setMinDate(e.currentTarget.value)}
-                    min={1900}
+                    min={1970}
                     max={maxDate()}
                 />
                 <label>From</label>

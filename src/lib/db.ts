@@ -1,55 +1,69 @@
-// src/db.ts
-import initSqlJs, { Database, SqlJsStatic } from 'sql.js';
+import initSqlJs, { Database, SqlJsStatic } from "sql.js";
 
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
 
-// Initialize sql.js once
 export async function initDB(sqliteFileUrl: string): Promise<Database> {
     if (db) return db;
 
     if (!SQL) {
         SQL = await initSqlJs({
-            locateFile: (file) => `/node_modules/sql.js/dist/${file}`, // adjust path if needed
+            locateFile: (file) => `node_modules/sql.js/dist/${file}`,
         });
     }
 
-    // Fetch the SQLite file as Uint8Array
     const response = await fetch(sqliteFileUrl);
-    const buffer = await response.arrayBuffer();
-    const uint8Array = new Uint8Array(buffer);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch SQLite file: ${sqliteFileUrl}`);
+    }
 
-    // Load DB from Uint8Array
-    db = new SQL.Database(uint8Array);
+    const buffer = await response.arrayBuffer();
+    db = new SQL.Database(new Uint8Array(buffer));
     return db;
 }
 
-// Example query helper
 export function queryEvents(
     db: Database,
     minLat: number,
     maxLat: number,
     minLon: number,
     maxLon: number,
+    startYear?: string,
+    endYear?: string
 ) {
-    const stmt = db.prepare(`
+    const start = startYear ? parseInt(startYear, 10) : 1970;
+    const end = endYear ? parseInt(endYear, 10) : new Date().getFullYear();
+
+    const sql = `
     SELECT eventid, iyear, country_txt, latitude, longitude, summary
     FROM events
-    WHERE latitude BETWEEN :minLat AND :maxLat
-      AND longitude BETWEEN :minLon AND :maxLon
-  `);
+    WHERE latitude BETWEEN ? AND ?
+      AND longitude BETWEEN ? AND ?
+      AND iyear BETWEEN ? AND ?
+    ORDER BY iyear DESC
+  `;
 
-    stmt.bind({
-        ':minLat': minLat,
-        ':maxLat': maxLat,
-        ':minLon': minLon,
-        ':maxLon': maxLon,
-    });
+    const stmt = db.prepare(sql);
+    const rows: any[] = [];
 
-    const rows: Array<Record<string, any>> = [];
-    while (stmt.step()) {
-        rows.push(stmt.getAsObject());
+    try {
+        stmt.bind([minLat, maxLat, minLon, maxLon, start, end]);
+
+        while (stmt.step()) {
+            rows.push(stmt.getAsObject());
+        }
+    } finally {
+        stmt.free();
     }
-    stmt.free();
+
+    console.log(
+        'row count', rows.length,
+        'from sql', sql,
+        'using bind', [minLat, maxLat, minLon, maxLon, start, end]
+    );
+
+    const debug = db.exec(`SELECT MIN(iyear) as minY, MAX(iyear) as maxY FROM events`);
+    console.log(debug);
+
     return rows;
 }

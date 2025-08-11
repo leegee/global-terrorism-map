@@ -13,8 +13,8 @@ import { DateRangeControl } from "../components/DateRangeControl";
 
 export default function Home() {
   const [dateRange, setDateRange] = createSignal<[string, string]>([
-    "2023",
-    "2025",
+    "1970",
+    "2021",
   ]);
 
   let mapContainer: HTMLDivElement | undefined;

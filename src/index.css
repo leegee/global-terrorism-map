@@ -11,14 +11,11 @@
 /* Dark theme style for attribution */
 .maplibregl-ctrl-attrib {
     background-color: rgba(0, 0, 0, 0.5) !important;
-    /* semi-transparent black */
-    color: #ccc !important;
-    /* lighter gray text */
+    color: #ddd !important;
     font-size: 12px;
     padding: 4px 8px;
     border-radius: 4px;
     max-width: 300px;
-    /* optional: make links lighter and subtle */
 }
 
 .maplibregl-ctrl-attrib a {
@@ -28,4 +25,9 @@
 
 .maplibregl-ctrl-attrib a:hover {
     color: #fff !important;
+}
+
+/* BeerCSS padding */
+.field {
+    margin-block-end: 0.5em !important;
 }
