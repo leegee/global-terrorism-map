@@ -1,13 +1,15 @@
-import { onMount, onCleanup } from "solid-js";
+import { onMount, onCleanup, createSignal } from "solid-js";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Feature, Point } from "geojson";
 import { initDB, queryEvents } from '../db';
+import HoverTooltip from "../components/HoverTooltip";
 
 export default function Home() {
   let mapContainer: HTMLDivElement | undefined;
   let map: maplibregl.Map | undefined;
   let db: any;
+  const [mapReady, setMapReady] = createSignal(false);
 
   async function updateEvents() {
     if (!map || !db) return;
@@ -18,7 +20,7 @@ export default function Home() {
     const minLon = bounds.getWest();
     const maxLon = bounds.getEast();
 
-    const rows = queryEvents(db, minLat, maxLat, minLon, maxLon);
+    const rows = await queryEvents(db, minLat, maxLat, minLon, maxLon);
 
     const features: Feature<Point>[] = rows.map(
       ({ eventid, iyear, country_txt, latitude, longitude, summary }) => ({
@@ -92,6 +94,8 @@ export default function Home() {
         },
       });
 
+      map.getCanvas().style.cursor = "default";
+
       map.addLayer({
         id: "events-layer",
         type: "circle",
@@ -106,6 +110,7 @@ export default function Home() {
 
       updateEvents();
       map.on("moveend", updateEvents);
+      setMapReady(true);
     });
   });
 
@@ -113,5 +118,8 @@ export default function Home() {
     if (map) map.remove();
   });
 
-  return <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer}></div>;
+  return <>
+    <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer}></div>
+    {mapReady() && map && <HoverTooltip map={map} layerId="events-layer" />}
+  </>
 }
