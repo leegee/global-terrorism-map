@@ -12,10 +12,17 @@ import HoverTooltip from "../components/HoverTooltip";
 import { DateRangeControl } from "../components/DateRangeControl";
 
 export default function Home() {
+  const [mapReady, setMapReady] = createSignal(false);
+
   const [dateRange, setDateRange] = createSignal<[string, string]>([
     "1970",
     "2021",
   ]);
+
+  const [tooltipInfo, setTooltipInfo] = createSignal<{
+    lngLat: maplibregl.LngLat;
+    html: string;
+  } | null>(null);
 
   let mapContainer: HTMLDivElement | undefined;
   let map: maplibregl.Map | undefined;
@@ -102,7 +109,7 @@ export default function Home() {
         },
         cluster: true,
         clusterMaxZoom: 11,
-        clusterRadius: 15, // 30
+        clusterRadius: 15,
       });
 
       map.addLayer({
@@ -170,7 +177,37 @@ export default function Home() {
 
       updateEventLayer(dateRange());
 
-      map.on("moveend", () => updateEventLayer());
+      map.on("mousemove", "unclustered-point", (e) => {
+        const features = e.features;
+        if (!features || !features.length) {
+          document.dispatchEvent(new CustomEvent("tooltip-hide"));
+          return;
+        }
+        const feature = features[0];
+        const props = feature.properties || {};
+
+        const html = `
+          <strong>Event ID:</strong> ${props.eventid || "N/A"}<br/>
+          <strong>Year:</strong> ${props.iyear || "N/A"}<br/>
+          <strong>Country:</strong> ${props.country_txt || "N/A"}<br/>
+          <em>${props.summary || ""}</em>
+        `;
+
+        document.dispatchEvent(
+          new CustomEvent("tooltip-show", {
+            detail: {
+              lngLat: e.lngLat,
+              html,
+            },
+          })
+        );
+      });
+
+      map.on("mouseleave", "unclustered-point", () => {
+        document.dispatchEvent(new CustomEvent("tooltip-hide"));
+      });
+
+      setMapReady(true);
     });
   });
 
@@ -184,21 +221,16 @@ export default function Home() {
   });
 
   return (
-    <>
-      <section class={styles.component}>
-        <aside class={styles.controls}>
-          <DateRangeControl
-            initialRange={dateRange()}
-            onChange={setDateRange}
-          />
-        </aside>
+    <section class={styles.component}>
+      <aside class={styles.controls}>
+        <DateRangeControl initialRange={dateRange()} onChange={setDateRange} />
+      </aside>
 
-        <div class={styles.map} ref={mapContainer}></div>
+      <div class={styles.map} ref={mapContainer}></div>
 
-        {map && (
-          <HoverTooltip map={map} layerId="unclustered-point" />
-        )}
-      </section>
-    </>
+      {mapReady() && (
+        <HoverTooltip map={map} />
+      )}
+    </section>
   );
 }

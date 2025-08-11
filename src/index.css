@@ -5,6 +5,9 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+
+    --gtd-popup-bg: rgb(23, 29, 36);
+    --gtd-popup-fg: oldlace;
 }
 
 
@@ -26,6 +29,26 @@
 .maplibregl-ctrl-attrib a:hover {
     color: #fff !important;
 }
+
+/* maplibre popup */
+.maplibregl-popup {
+    background: transparent !important;
+}
+
+.maplibregl-popup-content {
+    background-color: var(--gtd-popup-bg) !important;
+    color: var(--gtd-popup-fg) !important;
+    padding: 10px 15px !important;
+    border-radius: 8px !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+    max-width: 280px !important;
+}
+
+.maplibregl-popup-tip {
+    border-top-color: var(--gtd-popup-bg) !important;
+}
+
 
 /* BeerCSS padding */
 .field {
