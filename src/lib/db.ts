@@ -56,14 +56,11 @@ export function queryEvents(
         stmt.free();
     }
 
-    console.log(
-        'row count', rows.length,
-        'from sql', sql,
-        'using bind', [minLat, maxLat, minLon, maxLon, start, end]
-    );
-
-    const debug = db.exec(`SELECT MIN(iyear) as minY, MAX(iyear) as maxY FROM events`);
-    console.log(debug);
+    // console.log(
+    //     'row count', rows.length,
+    //     'from sql', sql,
+    //     'using bind', [minLat, maxLat, minLon, maxLon, start, end]
+    // );
 
     return rows;
 }
