@@ -20,7 +20,7 @@ export default function MapComponent(props: MapProps) {
     let map: maplibregl.Map | undefined;
     const [mapReady, setMapReady] = createSignal(false);
 
-    async function updateEventLayer() {
+    async function updateMapWithData() {
         if (!map || !props.db) return;
 
         const activeRange = props.dateRange;
@@ -172,7 +172,7 @@ export default function MapComponent(props: MapProps) {
                 document.dispatchEvent(new CustomEvent("tooltip-hide"));
             });
 
-            addHandleForcedSearchEvent(updateEventLayer);
+            addHandleForcedSearchEvent(updateMapWithData);
 
             setMapReady(true);
             props.onReady?.();
@@ -181,11 +181,11 @@ export default function MapComponent(props: MapProps) {
 
     onCleanup(() => {
         if (map) map.remove();
-        removeHandleForcedSearchEvent(updateEventLayer);
+        removeHandleForcedSearchEvent(updateMapWithData);
     });
 
     createEffect(() => {
-        if (map && mapReady()) updateEventLayer();
+        if (map && mapReady()) updateMapWithData();
     });
 
     return (
