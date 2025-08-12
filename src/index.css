@@ -65,3 +65,8 @@
 .maplibregl-popup-tip {
     border-top-color: var(--gtd-popup-bg) !important;
 }
+
+/* Beer over-ride */
+main {
+    padding: 0 !important;
+}

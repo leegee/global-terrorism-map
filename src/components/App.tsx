@@ -16,7 +16,7 @@ export default function App() {
     });
 
     return (
-        <section class={styles.component}>
+        <main class={styles.component}>
 
             <footer class={styles.controls}>
                 <nav class='no-space'>
@@ -25,18 +25,16 @@ export default function App() {
                 </nav>
             </footer>
 
-            <section class={styles.map}>
-                {db() && (
-                    <MapComponent
-                        db={db()}
-                        dateRange={dateRange()}
-                        q={q()}
-                    />
-                )}
+            {db() && (
+                <MapComponent
+                    db={db()}
+                    dateRange={dateRange()}
+                    q={q()}
+                />
+            )}
 
-                {!db() && <p>Loading database...</p>}
+            {!db() && <p>Loading database...</p>}
 
-            </section>
-        </section>
+        </main>
     );
 }

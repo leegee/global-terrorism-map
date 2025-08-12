@@ -1,6 +1,7 @@
 .component {
     display: flex;
     justify-content: center;
+    margin-block-start: 0 !important;
 
     .controls {
         display: flex;
@@ -14,10 +15,5 @@
         width: 80vw;
         width: auto;
         height: 3em;
-    }
-
-    .map {
-        width: 100vw;
-        height: 100vh;
     }
 }

@@ -3,6 +3,7 @@ import type { Feature, Point } from "geojson";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
+import styles from './Map.module.scss';
 import { baseStyle } from "../lib/map-style";
 import { queryEvents } from "../lib/db";
 import HoverTooltip from "./HoverTooltip";
@@ -188,7 +189,7 @@ export default function MapComponent(props: MapProps) {
 
     return (
         <>
-            <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
+            <div class={styles.component} ref={mapContainer} />
             {mapReady() && <HoverTooltip map={map!} />}
         </>
     );
