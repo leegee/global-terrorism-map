@@ -33,8 +33,6 @@ export default function MapComponent(props: MapProps) {
         const minLon = bounds.getWest();
         const maxLon = bounds.getEast();
 
-        console.trace('Update events layer')
-
         const rows = queryEvents(
             props.db,
             minLat,
