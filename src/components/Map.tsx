@@ -73,6 +73,7 @@ export default function MapComponent(props: MapProps) {
             zoom: 2,
             maxZoom: 13,
             attributionControl: false,
+            renderWorldCopies: false,            // key option: disables horizontal wrapping
         });
 
         map.getCanvas().style.cursor = "default";
@@ -92,6 +93,7 @@ export default function MapComponent(props: MapProps) {
                 cluster: true,
                 clusterMaxZoom: 11,
                 clusterRadius: 15,
+                generateId: true,
             });
 
             map.addLayer({
@@ -169,6 +171,10 @@ export default function MapComponent(props: MapProps) {
 
             map.on("mouseleave", "unclustered-point", () => {
                 document.dispatchEvent(new CustomEvent("tooltip-hide"));
+            });
+
+            map.on("moveend", () => {
+                updateMapWithData();
             });
 
             addHandleForcedSearchEvent(updateMapWithData);
