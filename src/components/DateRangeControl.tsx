@@ -20,7 +20,7 @@ export default function DateRangeControl(props: DateRangeControlProps) {
 
     return (
         <>
-            <div class="field label border no-padding">
+            <div class="field label border no-padding small">
                 <input
                     type="number"
                     value={minDate()}
@@ -31,7 +31,7 @@ export default function DateRangeControl(props: DateRangeControlProps) {
                 <label>From</label>
             </div>
 
-            <div class="field label border no-padding">
+            <div class="field label border no-padding small">
                 <input
                     type="number"
                     value={maxDate()}
