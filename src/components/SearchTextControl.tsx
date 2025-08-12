@@ -20,7 +20,7 @@ export default function SearchTextControl(props: InputTextControlProps) {
     return (
         <nav class="no-space">
             <div class="small  field border left-round">
-                <input type="text" placeholder=" " onBlur={e => setQ(e.currentTarget.value.trim())} />
+                <input type="text" placeholder="Search" onBlur={e => setQ(e.currentTarget.value.trim())} />
             </div>
             <button class="right-round" onClick={forceSearch}>Search</button>
         </nav>
