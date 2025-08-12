@@ -66,6 +66,7 @@ export function queryEvents(
     maxLat: number,
     minLon: number,
     maxLon: number,
+    q: string,
     startYear?: string,
     endYear?: string
 ) {
@@ -78,6 +79,7 @@ export function queryEvents(
     WHERE latitude BETWEEN ? AND ?
       AND longitude BETWEEN ? AND ?
       AND iyear BETWEEN ? AND ?
+      AND summary LIKE ?
     ORDER BY iyear DESC
   `;
 
@@ -85,7 +87,7 @@ export function queryEvents(
     const rows: any[] = [];
 
     try {
-        stmt.bind([minLat, maxLat, minLon, maxLon, start, end]);
+        stmt.bind([minLat, maxLat, minLon, maxLon, start, end, '%' + q + '%']);
 
         while (stmt.step()) {
             const row = stmt.getAsObject();

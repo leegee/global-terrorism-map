@@ -3,10 +3,12 @@ import styles from "./App.module.scss";
 import { initDB } from "../lib/db";
 import DateRangeControl from "./DateRangeControl";
 import MapComponent from "./Map";
+import SearchTextControl from "./SearchTextControl";
 
 export default function App() {
     const [db, setDb] = createSignal<any>(null);
     const [dateRange, setDateRange] = createSignal<[string, string]>(["1970", "2021"]);
+    const [q, setQ] = createSignal<string>('');
 
     onMount(async () => {
         const database = await initDB("/globalterrorismdb.sqlite");
@@ -19,6 +21,7 @@ export default function App() {
             <footer class={styles.controls + ' fill'}>
                 <nav>
                     <DateRangeControl initialRange={dateRange()} onChange={setDateRange} />
+                    <SearchTextControl q={q()} onChange={setQ} />
                 </nav>
             </footer>
 
@@ -27,6 +30,7 @@ export default function App() {
                     <MapComponent
                         db={db()}
                         dateRange={dateRange()}
+                        q={q()}
                     />
                 )}
             </section>

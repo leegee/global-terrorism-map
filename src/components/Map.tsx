@@ -10,6 +10,7 @@ import HoverTooltip from "./HoverTooltip";
 interface MapProps {
     db: any;
     dateRange: [string, string];
+    q: string;
     onReady?: () => void;
 }
 
@@ -23,6 +24,7 @@ export default function MapComponent(props: MapProps) {
 
         const activeRange = range ?? props.dateRange;
         const [startYear, endYear] = activeRange;
+        const q = props.q;
 
         const bounds = map.getBounds();
         const minLat = bounds.getSouth();
@@ -36,6 +38,7 @@ export default function MapComponent(props: MapProps) {
             maxLat,
             minLon,
             maxLon,
+            q,
             startYear,
             endYear
         );
