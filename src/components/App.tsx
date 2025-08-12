@@ -1,10 +1,10 @@
 import { createSignal, onMount } from "solid-js";
-import styles from "./MapUI.module.scss";
+import styles from "./App.module.scss";
 import { initDB } from "../lib/db";
-import { DateRangeControl } from "./DateRangeControl";
-import MapComponent from "./Map/Base";
+import DateRangeControl from "./DateRangeControl";
+import MapComponent from "./Map";
 
-export default function HomePage() {
+export default function App() {
     const [db, setDb] = createSignal<any>(null);
     const [dateRange, setDateRange] = createSignal<[string, string]>(["1970", "2021"]);
 
@@ -15,18 +15,21 @@ export default function HomePage() {
 
     return (
         <section class={styles.component}>
-            <aside class={styles.controls}>
-                <DateRangeControl initialRange={dateRange()} onChange={setDateRange} />
-            </aside>
 
-            <div class={styles.map}>
+            <footer class={styles.controls + ' fill'}>
+                <nav>
+                    <DateRangeControl initialRange={dateRange()} onChange={setDateRange} />
+                </nav>
+            </footer>
+
+            <section class={styles.map}>
                 {db() && (
                     <MapComponent
                         db={db()}
                         dateRange={dateRange()}
                     />
                 )}
-            </div>
+            </section>
         </section>
     );
 }

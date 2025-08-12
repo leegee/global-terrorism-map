@@ -3,9 +3,9 @@ import type { Feature, Point } from "geojson";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { baseStyle } from "../../lib/map-style";
-import { queryEvents } from "../../lib/db";
-import HoverTooltip from "../HoverTooltip";
+import { baseStyle } from "../lib/map-style";
+import { queryEvents } from "../lib/db";
+import HoverTooltip from "./HoverTooltip";
 
 interface MapProps {
     db: any;

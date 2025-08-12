@@ -1,0 +1,19 @@
+.component {
+    display: flex;
+    justify-content: center;
+
+    .controls {
+        z-index: 100;
+        position: fixed;
+        bottom: 5vh;
+        display: flex;
+        flex-direction: row;
+        width: 80vw;
+        height: 3em;
+    }
+
+    .map {
+        width: 100vw;
+        height: 100vh;
+    }
+}
