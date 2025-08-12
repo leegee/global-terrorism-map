@@ -4,9 +4,7 @@ A MapLibre + Solid + Vite map (sans data) of the GTD.
 
 At present, the GTD covers 1970 to 2022.
 
-![The World](./README/Screenshot%202025-08-11%20135244.png)
-
-![The UK](./README/Screenshot%202025-08-11%20135601-uk.png)
+![The World](./README/loaded.png)
 
 ## Usage
 
