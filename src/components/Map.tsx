@@ -24,6 +24,8 @@ export default function MapComponent(props: MapProps) {
     async function updateMapWithData() {
         if (!map || !props.db) return;
 
+        map.getCanvas().style.cursor = 'wait';
+
         const activeRange = props.dateRange;
         const [startYear, endYear] = activeRange;
         const q = props.q;
@@ -61,6 +63,10 @@ export default function MapComponent(props: MapProps) {
                 features,
             });
         }
+
+        map.once('idle', () => {
+            map.getCanvas().style.cursor = 'default';
+        });
     }
 
     onMount(() => {
