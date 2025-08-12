@@ -22,44 +22,6 @@ export async function initDB(sqliteFileUrl: string): Promise<Database> {
     return db;
 }
 
-export function queryEventsBasic(
-    db: Database,
-    minLat: number,
-    maxLat: number,
-    minLon: number,
-    maxLon: number,
-    startYear?: string,
-    endYear?: string
-) {
-    const start = startYear ? parseInt(startYear, 10) : 1970;
-    const end = endYear ? parseInt(endYear, 10) : new Date().getFullYear();
-
-    const sql = `
-    SELECT eventid, iyear, country_txt, latitude, longitude, summary
-    FROM events
-    WHERE latitude BETWEEN ? AND ?
-      AND longitude BETWEEN ? AND ?
-      AND iyear BETWEEN ? AND ?
-    ORDER BY iyear DESC
-  `;
-
-    const stmt = db.prepare(sql);
-    const rows: any[] = [];
-
-    try {
-        stmt.bind([minLat, maxLat, minLon, maxLon, start, end]);
-
-        while (stmt.step()) {
-            rows.push(stmt.getAsObject());
-        }
-    } finally {
-        stmt.free();
-    }
-
-    return rows;
-}
-
-
 export function queryEvents(
     db: Database,
     minLat: number,
@@ -97,7 +59,7 @@ export function queryEvents(
         stmt.free();
     }
 
-    // --- Fan out duplicates with radius scaling and longitude correction ---
+    // Fan out duplicates with radius scaling and longitude correction
     const grouped = new Map<string, any[]>();
     for (const row of rows) {
         const key = `${row.latitude},${row.longitude}`;
@@ -106,7 +68,7 @@ export function queryEvents(
     }
 
     const fanned: any[] = [];
-    const baseRadius = 0.0001; // ~11 meters base radius
+    const baseRadius = 0.0001;
 
     grouped.forEach((group, key) => {
         if (group.length === 1) {
@@ -134,5 +96,8 @@ export function queryEvents(
     //     "using bind", [minLat, maxLat, minLon, maxLon, start, end]
     // );
 
+    console.log(fanned.length)
+
     return fanned;
 }
+
