@@ -1,10 +1,10 @@
-import { createSignal, createEffect } from 'solid-js';
+import { createSignal, createEffect, Setter } from 'solid-js';
 
 type DateRange = [string, string];
 
 interface DateRangeControlProps {
     initialRange?: DateRange;
-    onChange: (range: DateRange) => void;
+    onChange: Setter<DateRange>;
 }
 
 export default function DateRangeControl(props: DateRangeControlProps) {

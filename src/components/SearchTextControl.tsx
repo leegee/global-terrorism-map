@@ -1,11 +1,11 @@
-import { createSignal, createEffect } from 'solid-js';
+import { createSignal, createEffect, Setter } from 'solid-js';
 import { forceSearch } from '../lib/forced-search-event';
 
 type DateRange = [string, string];
 
 interface InputTextControlProps {
     q?: string;
-    onChange: (q: string) => void;
+    onChange: Setter<string>;
 }
 
 
