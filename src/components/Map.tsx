@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { baseStyle } from "../lib/map-style";
 import { queryEvents } from "../lib/db";
 import HoverTooltip from "./HoverTooltip";
+import { addHandleForcedSearchEvent, removeHandleForcedSearchEvent } from "../lib/forced-search-event";
 
 interface MapProps {
     db: any;
@@ -19,10 +20,10 @@ export default function MapComponent(props: MapProps) {
     let map: maplibregl.Map | undefined;
     const [mapReady, setMapReady] = createSignal(false);
 
-    async function updateEventLayer(range?: [string, string]) {
+    async function updateEventLayer() {
         if (!map || !props.db) return;
 
-        const activeRange = range ?? props.dateRange;
+        const activeRange = props.dateRange;
         const [startYear, endYear] = activeRange;
         const q = props.q;
 
@@ -31,6 +32,8 @@ export default function MapComponent(props: MapProps) {
         const maxLat = bounds.getNorth();
         const minLon = bounds.getWest();
         const maxLon = bounds.getEast();
+
+        console.log('Update events layer')
 
         const rows = queryEvents(
             props.db,
@@ -149,7 +152,7 @@ export default function MapComponent(props: MapProps) {
                 },
             });
 
-            updateEventLayer(props.dateRange);
+            updateEventLayer();
 
             map.on("mousemove", "unclustered-point", (e) => {
                 const features = e.features;
@@ -171,6 +174,8 @@ export default function MapComponent(props: MapProps) {
                 document.dispatchEvent(new CustomEvent("tooltip-hide"));
             });
 
+            addHandleForcedSearchEvent(updateEventLayer);
+
             setMapReady(true);
             props.onReady?.();
         });
@@ -178,10 +183,11 @@ export default function MapComponent(props: MapProps) {
 
     onCleanup(() => {
         if (map) map.remove();
+        removeHandleForcedSearchEvent(updateEventLayer);
     });
 
     createEffect(() => {
-        if (map) updateEventLayer(props.dateRange);
+        if (map) updateEventLayer();
     });
 
     return (

@@ -19,7 +19,7 @@ export default function App() {
         <section class={styles.component}>
 
             <footer class={styles.controls + ' fill'}>
-                <nav>
+                <nav class='no-space'>
                     <DateRangeControl initialRange={dateRange()} onChange={setDateRange} />
                     <SearchTextControl q={q()} onChange={setQ} />
                 </nav>
