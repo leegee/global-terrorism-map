@@ -1,5 +1,4 @@
 import { createSignal, createEffect } from 'solid-js';
-import styles from './HoverTooltip.module.scss';
 
 type DateRange = [string, string];
 
@@ -21,7 +20,7 @@ export default function DateRangeControl(props: DateRangeControlProps) {
 
     return (
         <>
-            <div class="field border label small">
+            <div class="field label border no-padding">
                 <input
                     type="number"
                     value={minDate()}
@@ -32,7 +31,7 @@ export default function DateRangeControl(props: DateRangeControlProps) {
                 <label>From</label>
             </div>
 
-            <div class="field border label small">
+            <div class="field label border no-padding">
                 <input
                     type="number"
                     value={maxDate()}
