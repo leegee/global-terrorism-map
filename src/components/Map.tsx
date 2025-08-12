@@ -33,7 +33,7 @@ export default function MapComponent(props: MapProps) {
         const minLon = bounds.getWest();
         const maxLon = bounds.getEast();
 
-        console.log('Update events layer')
+        console.trace('Update events layer')
 
         const rows = queryEvents(
             props.db,
@@ -152,8 +152,6 @@ export default function MapComponent(props: MapProps) {
                 },
             });
 
-            updateEventLayer();
-
             map.on("mousemove", "unclustered-point", (e) => {
                 const features = e.features;
                 if (!features?.length) {
@@ -187,7 +185,7 @@ export default function MapComponent(props: MapProps) {
     });
 
     createEffect(() => {
-        if (map) updateEventLayer();
+        if (map && mapReady()) updateEventLayer();
     });
 
     return (
