@@ -33,6 +33,9 @@ export default function App() {
                         q={q()}
                     />
                 )}
+
+                {!db() && <p>Loading database...</p>}
+
             </section>
         </section>
     );
