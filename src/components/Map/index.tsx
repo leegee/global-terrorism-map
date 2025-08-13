@@ -150,6 +150,8 @@ export default function MapComponent() {
         });
 
         map.on("load", () => {
+            map.getCanvas().style.cursor = 'pointer';
+
             map.addSource("events_heatmap", {
                 type: "geojson",
                 data: {
@@ -248,10 +250,7 @@ export default function MapComponent() {
                     }
                 }
 
-                if (found) {
-                    map.getCanvas().style.cursor = 'pointer';
-                } else {
-                    map.getCanvas().style.cursor = '';
+                if (!found) {
                     document.dispatchEvent(new CustomEvent("tooltip-hide"));
                 }
             });
