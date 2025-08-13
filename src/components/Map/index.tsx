@@ -219,7 +219,7 @@ export default function MapComponent() {
                     "heatmap-opacity": 0.4,
                     // "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 4, 5, 6, 20],
                     "heatmap-radius": ["interpolate", ["linear"], ["zoom"],
-                        0, getPixelRadius(0) * 1.4,
+                        0, getPixelRadius(0) * 0.7,
                         HEATMAP_ZOOM_LEVEL, getPixelRadius(6) * 1.1,
                     ]
 
