@@ -12,56 +12,69 @@ export default function MapComponent(props: { db: Database }) {
         id: "events_layer",
         type: "custom",
         renderingMode: "2d",
+
         onAdd(mapInstance, gl) {
-            this.map = mapInstance;
-            this.gl = gl;
+            const self = this as any; // cast to avoid TS errors
+
+            self.map = mapInstance;
+            self.gl = gl;
 
             // Vertex shader
             const vertexSource = `
         attribute vec2 a_pos;
+        uniform float u_pointSize;
         void main() {
-          gl_PointSize = 10.0;
+          gl_PointSize = u_pointSize;
           gl_Position = vec4(a_pos, 0.0, 1.0);
         }
       `;
 
-            // Fragment shader
+            // Fragment shader: circular points
             const fragmentSource = `
+        precision mediump float;
+        uniform vec4 u_color;
         void main() {
-          gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // red
+          // make points circular
+          if (length(gl_PointCoord - vec2(0.5)) > 0.5) discard;
+          gl_FragColor = u_color;
         }
       `;
 
-            function compileShader(type: number, source: string) {
-                const shader = gl.createShader(type)!;
-                gl.shaderSource(shader, source);
-                gl.compileShader(shader);
-                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                    throw new Error(gl.getShaderInfoLog(shader) ?? "Shader compile failed");
+            function compileShader(type: number, src: string) {
+                const s = gl.createShader(type)!;
+                gl.shaderSource(s, src);
+                gl.compileShader(s);
+                if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                    throw new Error(gl.getShaderInfoLog(s) ?? "Shader compile failed");
                 }
-                return shader;
+                return s;
             }
 
-            const vertexShader = compileShader(gl.VERTEX_SHADER, vertexSource);
-            const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentSource);
+            const vs = compileShader(gl.VERTEX_SHADER, vertexSource);
+            const fs = compileShader(gl.FRAGMENT_SHADER, fragmentSource);
 
             const program = gl.createProgram()!;
-            gl.attachShader(program, vertexShader);
-            gl.attachShader(program, fragmentShader);
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
             gl.linkProgram(program);
             if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
                 throw new Error(gl.getProgramInfoLog(program) ?? "Program link failed");
             }
 
-            this.program = program;
-            this.aPos = gl.getAttribLocation(program, "a_pos");
+            self.program = program;
+            self.aPos = gl.getAttribLocation(program, "a_pos");
+            self.uPointSize = gl.getUniformLocation(program, "u_pointSize");
+            self.uColor = gl.getUniformLocation(program, "u_color");
 
-            this.buffer = gl.createBuffer();
+            self.buffer = gl.createBuffer();
         },
 
-        render(gl) {
-            if (!this.program || !this.buffer || this.aPos < 0) return;
-            gl.useProgram(this.program);
+        render() {
+            const self = this as any;
+            if (!self.program || !self.buffer || self.aPos < 0) return;
+
+            const gl: WebGLRenderingContext = self.gl;
+            gl.useProgram(self.program);
 
             const canvas = gl.canvas as HTMLCanvasElement;
 
@@ -73,10 +86,10 @@ export default function MapComponent(props: { db: Database }) {
                 bounds.getNorth(),
                 bounds.getWest(),
                 bounds.getEast(),
-                "" // query string, optional
+                ""
             );
 
-            // Convert events to clip space
+            // Project points to clip space
             const coords: number[] = [];
             events.forEach((ev) => {
                 const projected = map!.project([ev.longitude, ev.latitude]);
@@ -85,20 +98,25 @@ export default function MapComponent(props: { db: Database }) {
                 coords.push(xClip, yClip);
             });
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+            gl.bindBuffer(gl.ARRAY_BUFFER, self.buffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coords), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(this.aPos);
-            gl.vertexAttribPointer(this.aPos, 2, gl.FLOAT, false, 0, 0);
+
+            gl.enableVertexAttribArray(self.aPos);
+            gl.vertexAttribPointer(self.aPos, 2, gl.FLOAT, false, 0, 0);
+
+            gl.uniform1f(self.uPointSize, 12); // N pixels diameter
+            gl.uniform4f(self.uColor, 1, 0, 0, 1); // red
 
             gl.drawArrays(gl.POINTS, 0, coords.length / 2);
-            gl.disableVertexAttribArray(this.aPos);
+            gl.disableVertexAttribArray(self.aPos);
 
-            this.map.triggerRepaint();
+            map!.triggerRepaint();
         },
 
         onRemove() {
-            if (this.buffer) this.gl.deleteBuffer(this.buffer);
-            if (this.program) this.gl.deleteProgram(this.program);
+            const self = this as any;
+            if (self.buffer) self.gl.deleteBuffer(self.buffer);
+            if (self.program) self.gl.deleteProgram(self.program);
         },
     };
 
