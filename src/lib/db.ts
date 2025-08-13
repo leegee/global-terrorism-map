@@ -3,8 +3,27 @@ import initSqlJs, { Database, SqlJsStatic } from "sql.js";
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
 const CLUSTER_SIZE = 0.25;
+export const POINT_DIAMETER_PX = 12; // todo move
 
 export type { Database };
+
+// const ZOOM_TO_PIXEL_FACTOR = 2;
+
+export function getPixelRadius(zoom: number) {
+    const baseZoom = 6;       // reference zoom
+    const baseRadius = 20;    // pixels at reference zoom
+    return Math.max(4, Math.min(40, (baseRadius / baseZoom) * zoom));
+}
+
+function clusterSizeFromZoom(pixelRadius: number, zoom: number, lat: number) {
+    // Degrees per pixel at current latitude
+    const metersPerPixel = (156543.03392 * Math.cos(lat * Math.PI / 180)) / Math.pow(2, zoom);
+    // Convert meters to degrees (approx)
+    const degPerMeter = 1 / 111320; // avg meters per degree latitude
+    const degRadius = metersPerPixel * pixelRadius * degPerMeter;
+
+    return { latSize: degRadius, lonSize: degRadius / Math.cos(lat * Math.PI / 180) };
+}
 
 export async function initDB(sqliteFileUrl: string): Promise<Database> {
     if (db) return db;
@@ -118,17 +137,23 @@ export function queryEvents(
 export function queryEventsLatLng(
     db: Database,
     shouldCluster: boolean,
+    zoom: number,
+    centerLat: number,
     minLat: number,
     maxLat: number,
     minLon: number,
     maxLon: number,
     q: string,
     startYear?: string,
-    endYear?: string
+    endYear?: string,
 ) {
     const start = startYear ? parseInt(startYear, 10) : 1900;
     const end = endYear ? parseInt(endYear, 10) : new Date().getFullYear();
     const qCleaned = (q ?? '').trim();
+
+    // const pixelRadius = Math.max(4, Math.min(20, POINT_DIAMETER_PX * (zoom / ZOOM_TO_PIXEL_FACTOR)));
+    const pixelRadius = getPixelRadius(zoom);
+    const { latSize, lonSize } = clusterSizeFromZoom(pixelRadius, zoom, centerLat);
 
     if (shouldCluster) {
         const sql = `
@@ -143,8 +168,8 @@ export function queryEventsLatLng(
             GROUP BY latitude, longitude
         `;
         const bindValues = [
-            CLUSTER_SIZE, CLUSTER_SIZE,
-            CLUSTER_SIZE, CLUSTER_SIZE,
+            latSize, latSize,
+            lonSize, lonSize,
             minLat, maxLat, minLon, maxLon,
             start, end
         ];
@@ -221,7 +246,7 @@ export function queryEventsLatLng(
     //     "using bind", [minLat, maxLat, minLon, maxLon, start, end]
     // );
 
-    console.log(fanned.length)
+    console.log('Point set size', fanned.length)
 
     return fanned;
 }

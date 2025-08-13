@@ -1,7 +1,7 @@
 import { onMount, onCleanup, createSignal } from "solid-js";
 import maplibregl, { CustomLayerInterface } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { queryEventsLatLng, type Database } from "../lib/db";
+import { POINT_DIAMETER_PX, queryEventsLatLng, getPixelRadius, type Database } from "../lib/db";
 import HoverTooltip from "./HoverTooltip";
 import { baseStyle } from "../lib/map-style";
 import { addHandleForcedSearchEvent, removeHandleForcedSearchEvent } from "../lib/forced-search-event";
@@ -13,7 +13,6 @@ interface MapProps {
     onReady?: () => void;
 }
 
-const POINT_DIAMETER_PX = 12;
 const POINT_ALPHA = 0.75;
 const HEATMAP_ZOOM_LEVEL = 6;
 
@@ -22,6 +21,12 @@ export default function MapComponent(props: MapProps) {
     let map: maplibregl.Map | undefined;
     const [mapReady, setMapReady] = createSignal(false);
     let pointSize = 1;
+
+    function getMapCenter() {
+        if (!map) return 0;
+        const bounds = map.getBounds();
+        return (bounds.getNorth() + bounds.getSouth()) / 2;
+    }
 
     const customLayer: CustomLayerInterface = {
         id: "events_layer",
@@ -113,7 +118,9 @@ export default function MapComponent(props: MapProps) {
 
             const events = queryEventsLatLng(
                 props.db,
-                (map.getZoom() < HEATMAP_ZOOM_LEVEL),
+                zoom < HEATMAP_ZOOM_LEVEL,
+                zoom,
+                getMapCenter(),
                 bounds.getSouth(),
                 bounds.getNorth(),
                 bounds.getWest(),
@@ -172,7 +179,7 @@ export default function MapComponent(props: MapProps) {
             attributionControl: false,
             renderWorldCopies: false,
             center: [-0.1276, 51.5074],
-            zoom: 6,
+            zoom: HEATMAP_ZOOM_LEVEL + 1,
         });
 
         map.on("load", () => {
@@ -203,19 +210,29 @@ export default function MapComponent(props: MapProps) {
                         0.7, "yellow",
                         1, "red"
                     ],
-                    "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 4, 5, 6, 20],
                     // "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 6, 0],
-                    "heatmap-opacity": 0.4
+                    "heatmap-opacity": 0.4,
+                    // "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 4, 5, 6, 20],
+                    "heatmap-radius": ["interpolate", ["linear"], ["zoom"],
+                        0, getPixelRadius(0) * 2,
+                        2, getPixelRadius(2) * 2,
+                        4, getPixelRadius(4) * 2,
+                        6, getPixelRadius(6) * 2,
+                        8, getPixelRadius(8) * 2,
+                        10, getPixelRadius(10) * 2,
+                    ]
+
                 },
             });
 
             map.addLayer(customLayer);
-
             const updateData = () => {
                 const bounds = map!.getBounds();
                 const events = queryEventsLatLng(
                     props.db,
                     (map.getZoom() < HEATMAP_ZOOM_LEVEL),
+                    map.getZoom(),
+                    getMapCenter(),
                     bounds.getSouth(),
                     bounds.getNorth(),
                     bounds.getWest(),
@@ -230,7 +247,8 @@ export default function MapComponent(props: MapProps) {
                     const features = events.map(ev => ({
                         type: "Feature",
                         geometry: { type: "Point", coordinates: [ev.longitude, ev.latitude] },
-                        properties: { count: 1 },
+                        // properties: { count: 1 },
+                        properties: { count: ev.count || 1 },
                     }) as any);
 
                     (map!.getSource("events_heatmap") as maplibregl.GeoJSONSource).setData({
@@ -248,8 +266,8 @@ export default function MapComponent(props: MapProps) {
 
             map.on("zoom", () => {
                 const z = map!.getZoom();
-                map!.setLayoutProperty("events_heatmap", "visibility", z <= 6 ? "visible" : "none");
-                map!.setLayoutProperty("events_layer", "visibility", z > 6 ? "visible" : "none");
+                map!.setLayoutProperty("events_heatmap", "visibility", z <= HEATMAP_ZOOM_LEVEL ? "visible" : "none");
+                map!.setLayoutProperty("events_layer", "visibility", z > HEATMAP_ZOOM_LEVEL ? "visible" : "none");
             });
 
             mapContainer.addEventListener("mousemove", (e) => {
