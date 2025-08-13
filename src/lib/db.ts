@@ -2,7 +2,7 @@ import initSqlJs, { Database, SqlJsStatic } from "sql.js";
 
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
-const CLUSTER_SIZE = 0.25;
+
 export const POINT_DIAMETER_PX = 12; // todo move
 
 export type { Database };
