@@ -15,7 +15,7 @@ export default function SearchTextControl() {
                     type="text"
                     placeholder="Search"
                     value={q()}
-                    onBlur={e => onBlur(e.currentTarget.value)}
+                    onInput={e => onBlur(e.currentTarget.value)}
                 />
             </div>
             <button class="right-round" onClick={forceSearch}>Search</button>
