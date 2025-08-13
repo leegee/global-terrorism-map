@@ -113,7 +113,7 @@ export default function MapComponent(props: MapProps) {
 
             const events = queryEventsLatLng(
                 props.db,
-                (map.getZoom() <= HEATMAP_ZOOM_LEVEL),
+                (map.getZoom() < HEATMAP_ZOOM_LEVEL),
                 bounds.getSouth(),
                 bounds.getNorth(),
                 bounds.getWest(),
@@ -203,7 +203,7 @@ export default function MapComponent(props: MapProps) {
                         0.7, "yellow",
                         1, "red"
                     ],
-                    "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 6, 20],
+                    "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 4, 5, 6, 20],
                     // "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 6, 0],
                     "heatmap-opacity": 0.4
                 },
@@ -215,7 +215,7 @@ export default function MapComponent(props: MapProps) {
                 const bounds = map!.getBounds();
                 const events = queryEventsLatLng(
                     props.db,
-                    (map.getZoom() <= HEATMAP_ZOOM_LEVEL),
+                    (map.getZoom() < HEATMAP_ZOOM_LEVEL),
                     bounds.getSouth(),
                     bounds.getNorth(),
                     bounds.getWest(),
@@ -225,7 +225,7 @@ export default function MapComponent(props: MapProps) {
                     props.dateRange[1]
                 );
 
-                if (map.getZoom() <= HEATMAP_ZOOM_LEVEL) {
+                if (map.getZoom() < HEATMAP_ZOOM_LEVEL) {
                     // Update heatmap data
                     const features = events.map(ev => ({
                         type: "Feature",
@@ -254,7 +254,7 @@ export default function MapComponent(props: MapProps) {
 
             mapContainer.addEventListener("mousemove", (e) => {
                 const zoom = map!.getZoom();
-                if (zoom <= HEATMAP_ZOOM_LEVEL) {
+                if (zoom < HEATMAP_ZOOM_LEVEL) {
                     document.dispatchEvent(new CustomEvent("tooltip-hide"));
                     return;
                 }

@@ -2,6 +2,7 @@ import initSqlJs, { Database, SqlJsStatic } from "sql.js";
 
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
+const CLUSTER_SIZE = 0.25;
 
 export type { Database };
 
@@ -116,7 +117,7 @@ export function queryEvents(
 
 export function queryEventsLatLng(
     db: Database,
-    cluster: boolean,
+    shouldCluster: boolean,
     minLat: number,
     maxLat: number,
     minLon: number,
@@ -128,6 +129,32 @@ export function queryEventsLatLng(
     const start = startYear ? parseInt(startYear, 10) : 1900;
     const end = endYear ? parseInt(endYear, 10) : new Date().getFullYear();
     const qCleaned = (q ?? '').trim();
+
+    if (shouldCluster) {
+        const sql = `
+            SELECT
+                ROUND(latitude / ?) * ? AS latitude,
+                ROUND(longitude / ?) * ? AS longitude,
+                COUNT(*) AS count
+            FROM events
+            WHERE latitude BETWEEN ? AND ?
+              AND longitude BETWEEN ? AND ?
+              AND iyear BETWEEN ? AND ?
+            GROUP BY latitude, longitude
+        `;
+        const bindValues = [
+            CLUSTER_SIZE, CLUSTER_SIZE,
+            CLUSTER_SIZE, CLUSTER_SIZE,
+            minLat, maxLat, minLon, maxLon,
+            start, end
+        ];
+        const stmt = db.prepare(sql);
+        const rows: Array<{ latitude: number; longitude: number; count: number }> = [];
+        stmt.bind(bindValues);
+        while (stmt.step()) rows.push(stmt.getAsObject());
+        stmt.free();
+        return rows;
+    }
 
     let sql = `
     SELECT eventid, latitude, longitude
