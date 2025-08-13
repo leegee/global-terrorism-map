@@ -18,12 +18,6 @@ export default function MapComponent() {
     const [mapReady, setMapReady] = createSignal(false);
     let pointSize = 1;
 
-    function getMapCenter() {
-        if (!map) return 0;
-        const bounds = map.getBounds();
-        return (bounds.getNorth() + bounds.getSouth()) / 2;
-    }
-
     const customLayer: CustomLayerInterface = {
         id: "events_layer",
         type: "custom",
