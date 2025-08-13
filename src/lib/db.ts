@@ -114,9 +114,9 @@ export function queryEvents(
     return fanned;
 }
 
-
 export function queryEventsLatLng(
     db: Database,
+    cluster: boolean,
     minLat: number,
     maxLat: number,
     minLon: number,

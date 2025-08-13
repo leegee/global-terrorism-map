@@ -113,6 +113,7 @@ export default function MapComponent(props: MapProps) {
 
             const events = queryEventsLatLng(
                 props.db,
+                (map.getZoom() <= HEATMAP_ZOOM_LEVEL),
                 bounds.getSouth(),
                 bounds.getNorth(),
                 bounds.getWest(),
@@ -215,6 +216,7 @@ export default function MapComponent(props: MapProps) {
                 const bounds = map!.getBounds();
                 const events = queryEventsLatLng(
                     props.db,
+                    (map.getZoom() <= HEATMAP_ZOOM_LEVEL),
                     bounds.getSouth(),
                     bounds.getNorth(),
                     bounds.getWest(),
@@ -236,8 +238,9 @@ export default function MapComponent(props: MapProps) {
                         type: "FeatureCollection",
                         features,
                     });
+                } else {
+                    map!.triggerRepaint();
                 }
-                map!.triggerRepaint();
             };
 
             // Initial load
