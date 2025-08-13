@@ -26,6 +26,72 @@ function clusterSizeFromZoom(pixelRadius: number, zoom: number, lat: number) {
     return { latSize: degRadius, lonSize: degRadius / Math.cos(lat * Math.PI / 180) };
 }
 
+export interface Point {
+    latitude: number;
+    longitude: number;
+    [key: string]: any; // any other properties
+}
+
+
+export function fanPoints(
+    rows: Point[],
+    zoom: number,
+    maxZoomForFanning = HEATMAP_ZOOM_LEVEL
+): Point[] {
+    if (!rows || rows.length === 0) return [];
+
+    const doFan = zoom >= maxZoomForFanning;
+    const grouped = new Map<string, Point[]>();
+
+    for (const row of rows) {
+        const key = `${row.latitude},${row.longitude}`;
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key)!.push(row);
+    }
+
+    const fanned: Point[] = [];
+    const baseRadius = 0.002;
+    const ringStep = 0.001;
+
+    grouped.forEach((group, key) => {
+        if (group.length === 1 || !doFan) {
+            fanned.push(...group);
+            return;
+        }
+
+        const [lat, lng] = key.split(",").map(Number);
+        const latRad = (lat * Math.PI) / 180;
+
+        let remaining = group.length;
+        let idx = 0;
+        let ring = 0;
+
+        while (remaining > 0) {
+            // const pointsInRing = Math.min(remaining, 6 + ring * 5); // increase capacity per ring
+            const pointsInRing = Math.min(remaining, Math.ceil(3 * Math.pow(1.25, ring)));
+            const radius = baseRadius + ring * ringStep;
+            const startAngle = Math.random() * 2 * Math.PI; // random offset per ring
+
+            for (let i = 0; i < pointsInRing; i++) {
+                const angle = startAngle + (2 * Math.PI * i) / pointsInRing;
+                const row = group[idx];
+
+                row.latitude = lat + radius * Math.cos(angle);
+                row.longitude = lng + (radius * Math.sin(angle)) / Math.cos(latRad);
+
+                fanned.push(row);
+                idx++;
+            }
+
+            remaining -= pointsInRing;
+            ring++;
+        }
+    });
+
+    return fanned;
+}
+
+
 export async function initDB(sqliteFileUrl: string): Promise<Database> {
     if (db) return db;
 
@@ -93,44 +159,7 @@ export function queryEvents(
         stmt.free();
     }
 
-    // Fan out duplicates with radius scaling and longitude correction
-    const grouped = new Map<string, any[]>();
-    for (const row of rows) {
-        const key = `${row.latitude},${row.longitude}`;
-        if (!grouped.has(key)) grouped.set(key, []);
-        grouped.get(key)!.push(row);
-    }
-
-    const fanned: Array<{ [key: string]: any }> = [];
-    const baseRadius = 0.0001;
-
-    grouped.forEach((group, key) => {
-        if (group.length === 1) {
-            fanned.push(group[0]);
-            return;
-        }
-
-        const [lat, lng] = key.split(",").map(Number);
-        const latRad = (lat * Math.PI) / 180;
-
-        // Scale the outter ring
-        const radius = baseRadius * Math.sqrt(group.length) * 20;
-
-        group.forEach((row, i) => {
-            const angle = (2 * Math.PI * i) / group.length;
-            row.latitude = lat + radius * Math.cos(angle);
-            row.longitude = lng + (radius * Math.sin(angle)) / Math.cos(latRad);
-            fanned.push(row);
-        });
-    });
-
-    // console.log(
-    //     "row count", fanned.length,
-    //     "from sql", sql,
-    //     "using bind", [minLat, maxLat, minLon, maxLon, start, end]
-    // );
-
-    return fanned;
+    return fanPoints(rows as Point[], HEATMAP_ZOOM_LEVEL + 3);
 }
 
 export function queryEventsLatLng(
@@ -209,46 +238,7 @@ export function queryEventsLatLng(
         stmt.free();
     }
 
-    // Fan out duplicates with radius scaling and longitude correction
-    const grouped = new Map<string, any[]>();
-    for (const row of rows) {
-        const key = `${row.latitude},${row.longitude}`;
-        if (!grouped.has(key)) grouped.set(key, []);
-        grouped.get(key)!.push(row);
-    }
-
-    const fanned: Array<{ [key: string]: any }> = [];
-    const baseRadius = 0.0001;
-
-    grouped.forEach((group, key) => {
-        if (group.length === 1) {
-            fanned.push(group[0]);
-            return;
-        }
-
-        const [lat, lng] = key.split(",").map(Number);
-        const latRad = (lat * Math.PI) / 180;
-
-        // Scale the outter ring
-        const radius = baseRadius * Math.sqrt(group.length) * 20;
-
-        group.forEach((row, i) => {
-            const angle = (2 * Math.PI * i) / group.length;
-            row.latitude = lat + radius * Math.cos(angle);
-            row.longitude = lng + (radius * Math.sin(angle)) / Math.cos(latRad);
-            fanned.push(row);
-        });
-    });
-
-    // console.log(
-    //     "row count", fanned.length,
-    //     "from sql", sql,
-    //     "using bind", [minLat, maxLat, minLon, maxLon, start, end]
-    // );
-
-    console.log('Point set size', fanned.length)
-
-    return fanned;
+    return fanPoints(rows as Point[], zoom);
 }
 
 export function getEventById(eventId: number): { [key: string]: any } | null {
