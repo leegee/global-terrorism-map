@@ -14,6 +14,7 @@ interface MapProps {
 }
 
 const POINT_DIAMETER_PX = 12;
+const POINT_ALPHA = 0.75;
 
 export default function MapComponent(props: MapProps) {
     let mapContainer: HTMLDivElement | undefined;
@@ -31,7 +32,7 @@ export default function MapComponent(props: MapProps) {
             self.gl = gl;
 
             gl.enable(gl.BLEND);
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             const vertexSource = `
@@ -129,7 +130,8 @@ export default function MapComponent(props: MapProps) {
             gl.vertexAttribPointer(self.aPos, 2, gl.FLOAT, false, 0, 0);
 
             gl.uniform1f(self.uPointSize, POINT_DIAMETER_PX);
-            gl.uniform4f(self.uColor, 1, 0, 0, 0.25);
+            // gl.uniform4f(self.uColor, 1, 0, 0, 0.25);
+            gl.uniform4f(self.uColor, 1 * POINT_ALPHA, 0 * POINT_ALPHA, 0 * POINT_ALPHA, POINT_ALPHA);
 
             gl.drawArrays(gl.POINTS, 0, coords.length / 2);
             gl.disableVertexAttribArray(self.aPos);
