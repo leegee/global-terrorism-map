@@ -1,12 +1,9 @@
 import { mapState, setMapState } from "../../store";
-import { forceSearch } from "../../lib/forced-search-event";
 
 export default function SearchTextControl() {
     const q = () => mapState.q;
 
-    const onBlur = (value: string) => {
-        setMapState("q", value.trim());
-    };
+    const onBlur = (value: string) => setMapState("q", value.trim());
 
     return (
         <div class="field label border no-padding small round">
