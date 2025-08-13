@@ -13,7 +13,7 @@ export default function SearchTextControl() {
                 value={q()}
                 onInput={e => onBlur(e.currentTarget.value)}
             />
-            <label>Search terms</label>
+            <label>{mapState.count} events displayed</label>
         </div>
     );
 }
