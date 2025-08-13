@@ -84,15 +84,11 @@ export default function MapComponent() {
             const self = this as any;
             if (!self.program || !self.buffer || self.aPos < 0) return;
             const zoom = map.getZoom();
-            if (zoom < 3) {
-                pointSize = 2;
-            } else if (zoom < 4) {
-                pointSize = 5;
-            } else if (zoom < 6) {
-                pointSize = POINT_DIAMETER_PX / 2;
-            } else if (zoom < 8) {
-                pointSize = POINT_DIAMETER_PX;
-            }
+            pointSize = Math.max(POINT_DIAMETER_PX / 4,
+                Math.min(POINT_DIAMETER_PX,
+                    POINT_DIAMETER_PX * (zoom / HEATMAP_ZOOM_LEVEL)
+                )
+            );
 
             const gl: WebGLRenderingContext = self.gl;
             gl.useProgram(self.program);
