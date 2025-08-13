@@ -71,7 +71,6 @@ export default function HoverTooltip(props: HoverTooltipProps) {
             });
         }
 
-        // Use Solid to render JSX into a container div
         const container = document.createElement("div");
         render(() => <PopupContent properties={properties} />, container);
 
