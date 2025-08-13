@@ -4,6 +4,12 @@ A MapLibre + Solid + Vite map (sans data) of the GTD.
 
 At present, the GTD covers 1970 to 2022.
 
+![The World](./README/world.png)
+
+![England and Wales](./README/england-wales.png)
+
+The older non-GL layer:
+
 ![The World](./README/loaded.png)
 
 ## Usage
