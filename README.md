@@ -10,7 +10,7 @@ At present, the GTD covers 1970 to 2022.
 
 The older non-GL layer:
 
-![The World](./README/loaded.png)
+![The World](./README/no-custom-layer.png)
 
 ## Usage
 
