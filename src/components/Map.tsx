@@ -4,7 +4,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { queryEventsLatLng, type Database } from "../lib/db";
 import HoverTooltip from "./HoverTooltip";
 import { baseStyle } from "../lib/map-style";
-import { addHandleForcedSearchEvent } from "../lib/forced-search-event";
+import { addHandleForcedSearchEvent, removeHandleForcedSearchEvent } from "../lib/forced-search-event";
 
 interface MapProps {
     db: Database;
@@ -176,19 +176,18 @@ export default function MapComponent(props: MapProps) {
         });
 
         map.on("load", () => {
-            // --- Add heatmap source & layer ---
-            map.addSource("events-heat", {
+            map.addSource("events_heatmap", {
                 type: "geojson",
                 data: {
                     type: "FeatureCollection",
-                    features: [], // initially empty
+                    features: [],
                 },
             });
 
             map.addLayer({
-                id: "events-heat",
+                id: "events_heatmap",
                 type: "heatmap",
-                source: "events-heat",
+                source: "events_heatmap",
                 maxzoom: HEATMAP_ZOOM_LEVEL,
                 paint: {
                     "heatmap-weight": ["interpolate", ["linear"], ["get", "count"], 0, 0, 1, 1],
@@ -234,7 +233,7 @@ export default function MapComponent(props: MapProps) {
                         properties: { count: 1 },
                     }) as any);
 
-                    (map!.getSource("events-heat") as maplibregl.GeoJSONSource).setData({
+                    (map!.getSource("events_heatmap") as maplibregl.GeoJSONSource).setData({
                         type: "FeatureCollection",
                         features,
                     });
@@ -245,13 +244,56 @@ export default function MapComponent(props: MapProps) {
 
             // Initial load
             updateData();
-
             map.on("moveend", updateData);
+
             map.on("zoom", () => {
                 const z = map!.getZoom();
-                map!.setLayoutProperty("events-heat", "visibility", z <= 6 ? "visible" : "none");
+                map!.setLayoutProperty("events_heatmap", "visibility", z <= 6 ? "visible" : "none");
                 map!.setLayoutProperty("events_layer", "visibility", z > 6 ? "visible" : "none");
             });
+
+            mapContainer!.addEventListener("mousemove", (e) => {
+                const zoom = map!.getZoom();
+                if (zoom <= HEATMAP_ZOOM_LEVEL) {
+                    document.dispatchEvent(new CustomEvent("tooltip-hide"));
+                    return;
+                }
+
+                const self = customLayer as any;
+                if (!self.pixelCoords) return;
+
+                const rect = mapContainer!.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                const radius = pointSize / 2;
+                let found = false;
+
+                for (const p of self.pixelCoords) {
+                    const dx = mouseX - p.x;
+                    const dy = mouseY - p.y;
+                    if (dx * dx + dy * dy <= radius * radius) {
+                        document.dispatchEvent(new CustomEvent("tooltip-show", {
+                            detail: {
+                                lngLat: map!.unproject([p.x, p.y]),
+                                eventId: p.id
+                            }
+                        }));
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    document.dispatchEvent(new CustomEvent("tooltip-hide"));
+                }
+            });
+
+            map.on("mouseleave", "events_layer", () => {
+                document.dispatchEvent(new CustomEvent("tooltip-hide"));
+            });
+
+            addHandleForcedSearchEvent(map.triggerRepaint);
 
             setMapReady(true);
             props.onReady?.();
@@ -260,6 +302,7 @@ export default function MapComponent(props: MapProps) {
 
 
     onCleanup(() => {
+        removeHandleForcedSearchEvent(map.triggerRepaint);
         if (map) map.remove();
     });
 
