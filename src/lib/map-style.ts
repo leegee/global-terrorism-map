@@ -1,4 +1,4 @@
-export const baseStyle = {
+export const baseLayerStyle = {
     version: 8 as const,
     glyphs: "fonts/{fontstack}/{range}.pbf",
     sources: {

@@ -1,32 +1,33 @@
-import { createSignal, createEffect, Setter } from 'solid-js';
+import { mapState, setMapState } from "../store";
 
-type DateRange = [string, string];
+export default function DateRangeControl() {
+    const minYear = () => mapState.dateRange[0];
+    const maxYear = () => mapState.dateRange[1];
 
-interface DateRangeControlProps {
-    initialRange?: DateRange;
-    onChange: (range: DateRange) => void;
-}
+    const setRange = (newRange: [string, string]) => {
+        const [min, max] = newRange;
+        setMapState("dateRange", [min, max]);
+    };
 
-export default function DateRangeControl(props: DateRangeControlProps) {
-    const [minDate, setMinDate] = createSignal(props.initialRange?.[0] ?? '1970');
-    const [maxDate, setMaxDate] = createSignal(props.initialRange?.[1] ?? new Date().getFullYear().toString());
+    const onMinBlur = (value: string) => {
+        if (value > maxYear()) setRange([value, value]);
+        else setRange([value, maxYear()]);
+    };
 
-    createEffect(() => {
-        if (minDate() > maxDate()) {
-            setMaxDate(minDate());
-        }
-        props.onChange([minDate(), maxDate()]);
-    });
+    const onMaxBlur = (value: string) => {
+        if (value < minYear()) setRange([value, value]);
+        else setRange([minYear(), value]);
+    };
 
     return (
         <>
             <div class="field label border no-padding small round">
                 <input
                     type="number"
-                    value={minDate()}
-                    onBlur={e => setMinDate(e.currentTarget.value)}
+                    value={minYear()}
+                    onBlur={e => onMinBlur(e.currentTarget.value)}
                     min={1970}
-                    max={maxDate()}
+                    max={maxYear()}
                 />
                 <label>From</label>
             </div>
@@ -34,9 +35,9 @@ export default function DateRangeControl(props: DateRangeControlProps) {
             <div class="field label border no-padding small round">
                 <input
                     type="number"
-                    value={maxDate()}
-                    onBlur={e => setMaxDate(e.currentTarget.value)}
-                    min={minDate()}
+                    value={maxYear()}
+                    onBlur={e => onMaxBlur(e.currentTarget.value)}
+                    min={minYear()}
                     max={new Date().getFullYear().toString()}
                 />
                 <label>To</label>

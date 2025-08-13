@@ -3,9 +3,11 @@ import maplibregl, { CustomLayerInterface } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { POINT_DIAMETER_PX, queryEventsLatLng, getPixelRadius, type Database } from "../lib/db";
 import HoverTooltip from "./HoverTooltip";
-import { baseStyle } from "../lib/map-style";
+import { baseLayerStyle } from "../lib/map-style";
 import { addHandleForcedSearchEvent, removeHandleForcedSearchEvent } from "../lib/forced-search-event";
-import { mapState, setMapState } from "../store";
+import { mapState } from "../store";
+import MapDataFetcher from "./MapDataFetcher";
+import styles from './Map.module.scss';
 
 interface MapProps {
     db: Database;
@@ -132,7 +134,7 @@ export default function MapComponent() {
 
             const canvas = gl.canvas as HTMLCanvasElement;
 
-            const events = fetchEvents();
+            const events = mapState.results;
 
             // Project points to clip space and store pixel coords
             const coords: number[] = [];
@@ -178,7 +180,7 @@ export default function MapComponent() {
 
         map = new maplibregl.Map({
             container: mapContainer,
-            style: baseStyle as any,
+            style: baseLayerStyle as any,
             maxZoom: 13,
             attributionControl: false,
             renderWorldCopies: false,
@@ -231,23 +233,18 @@ export default function MapComponent() {
 
             map.addLayer(customLayer);
             const updateData = () => {
-                const events = fetchEvents();
-
+                const events = mapState.results;
                 if (map.getZoom() < HEATMAP_ZOOM_LEVEL) {
-                    // Update heatmap data
-                    const features = events.map(ev => ({
-                        type: "Feature",
-                        geometry: { type: "Point", coordinates: [ev.longitude, ev.latitude] },
-                        // properties: { count: 1 },
-                        properties: { count: ev.count || 1 },
-                    }) as any);
-
-                    (map!.getSource("events_heatmap") as maplibregl.GeoJSONSource).setData({
+                    (map.getSource("events_heatmap") as maplibregl.GeoJSONSource).setData({
                         type: "FeatureCollection",
-                        features,
+                        features: events.map(ev => ({
+                            type: "Feature",
+                            geometry: { type: "Point", coordinates: [ev.longitude, ev.latitude] },
+                            properties: { count: ev.count || 1 },
+                        })),
                     });
                 } else {
-                    map!.triggerRepaint();
+                    map.triggerRepaint();
                 }
             };
 
@@ -317,8 +314,10 @@ export default function MapComponent() {
 
     return (
         <>
-            <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer} />
+            <div class={styles.component} ref={mapContainer} />
             {mapReady() && <HoverTooltip map={map!} />}
+            {mapReady() && <MapDataFetcher map={map!} db={mapState.db} />}
+
         </>
     );
 }

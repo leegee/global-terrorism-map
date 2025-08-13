@@ -1,26 +1,22 @@
-import { createSignal, createEffect, Setter } from 'solid-js';
-import { forceSearch } from '../lib/forced-search-event';
+import { mapState, setMapState } from "../store";
+import { forceSearch } from "../lib/forced-search-event";
 
-type DateRange = [string, string];
+export default function SearchTextControl() {
+    const q = () => mapState.q;
 
-interface InputTextControlProps {
-    q?: string;
-    onChange: (q: string) => void;
-}
-
-
-export default function SearchTextControl(props: InputTextControlProps) {
-    const [q, setQ] = createSignal(props.q);
-
-
-    createEffect(() => {
-        props.onChange(q());
-    });
+    const onBlur = (value: string) => {
+        setMapState("q", value.trim());
+    };
 
     return (
         <nav class="no-space">
-            <div class="small  field border left-round">
-                <input type="text" placeholder="Search" onBlur={e => setQ(e.currentTarget.value.trim())} />
+            <div class="small field border left-round">
+                <input
+                    type="text"
+                    placeholder="Search"
+                    value={q()}
+                    onBlur={e => onBlur(e.currentTarget.value)}
+                />
             </div>
             <button class="right-round" onClick={forceSearch}>Search</button>
         </nav>

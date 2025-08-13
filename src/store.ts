@@ -1,16 +1,25 @@
-// store.ts
 import { createStore } from "solid-js/store";
-import { initDB } from "./lib/db";
+import type { Database } from "./lib/db";
 
-export const [mapState, setMapState] = createStore({
+export interface Event {
+    eventid: string;
+    longitude: number;
+    latitude: number;
+    count?: number;
+}
+
+export interface MapState {
+    db: Database | null;
+    dateRange: [string, string];
+    q: string;
+    count: number;
+    results: Event[];
+}
+
+export const [mapState, setMapState] = createStore<MapState>({
     db: null,
-    dateRange: [null, null] as [string | null, string | null],
+    dateRange: ["1970", "2021"],
     q: "",
-    count: 0
+    count: 0,
+    results: [],
 });
-
-// Kick off DB load when the store is first imported
-(async () => {
-    const database = await initDB("/globalterrorismdb.sqlite");
-    setMapState("db", database);
-})();

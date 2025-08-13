@@ -176,6 +176,7 @@ export function queryEventsLatLng(
         stmt.bind(bindValues);
         while (stmt.step()) rows.push(stmt.getAsObject());
         stmt.free();
+
         return rows;
     }
 
