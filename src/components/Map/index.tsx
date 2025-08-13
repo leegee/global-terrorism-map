@@ -6,7 +6,7 @@ import { baseLayerStyle } from "../../lib/map-style";
 import { HEATMAP_ZOOM_LEVEL } from "../../config";
 import { mapState } from "../../store";
 import { POINT_DIAMETER_PX, getPixelRadius, type Database } from "../../lib/db";
-import HoverTooltip from "./HoverTooltip";
+import Tooltip from "./Tooltip";
 import MapDataFetcher from "./MapDataFetcher";
 import styles from './Map.module.scss';
 
@@ -17,6 +17,46 @@ export default function MapComponent() {
     let map: maplibregl.Map | undefined;
     const [mapReady, setMapReady] = createSignal(false);
     let pointSize = 1;
+
+
+    function maybeTooltip(e: MouseEvent, fixed = false) {
+        const zoom = map!.getZoom();
+        if (zoom < HEATMAP_ZOOM_LEVEL) {
+            document.dispatchEvent(new CustomEvent("tooltip-hide"));
+            return;
+        }
+
+        const self = customLayer as any;
+        if (!self.pixelCoords) return;
+
+        const rect = mapContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const radius = pointSize / 2;
+        let found = false;
+
+        for (const p of self.pixelCoords) {
+            const dx = mouseX - p.x;
+            const dy = mouseY - p.y;
+            if (dx * dx + dy * dy <= radius * radius) {
+
+                document.dispatchEvent(new CustomEvent("tooltip-show", {
+                    detail: {
+                        lngLat: map!.unproject([p.x, p.y]),
+                        eventId: p.id,
+                        fixed
+                    }
+                }));
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            document.dispatchEvent(new CustomEvent("tooltip-hide"));
+        }
+    }
 
     const customLayer: CustomLayerInterface = {
         id: "events_layer",
@@ -217,50 +257,19 @@ export default function MapComponent() {
                 map!.setLayoutProperty("events_layer", "visibility", z > HEATMAP_ZOOM_LEVEL ? "visible" : "none");
             });
 
-            mapContainer.addEventListener("mousemove", (e) => {
-                const zoom = map!.getZoom();
-                if (zoom < HEATMAP_ZOOM_LEVEL) {
-                    document.dispatchEvent(new CustomEvent("tooltip-hide"));
-                    return;
-                }
-
-                const self = customLayer as any;
-                if (!self.pixelCoords) return;
-
-                const rect = mapContainer.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
-
-                const radius = pointSize / 2;
-                let found = false;
-
-                for (const p of self.pixelCoords) {
-                    const dx = mouseX - p.x;
-                    const dy = mouseY - p.y;
-                    if (dx * dx + dy * dy <= radius * radius) {
-
-                        document.dispatchEvent(new CustomEvent("tooltip-show", {
-                            detail: {
-                                lngLat: map!.unproject([p.x, p.y]),
-                                eventId: p.id
-                            }
-                        }));
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    document.dispatchEvent(new CustomEvent("tooltip-hide"));
-                }
+            mapContainer.addEventListener("click", (e) => {
+                maybeTooltip(e, true);
             });
 
-            mapContainer.addEventListener("mouseleave", () => {
-                document.dispatchEvent(new CustomEvent("tooltip-hide"));
-            });
+            // mapContainer.addEventListener("mousemove", (e) => {
+            //     maybeTooltip(e);
+            // });
+
+            // mapContainer.addEventListener("mouseleave", () => {
+            //     document.dispatchEvent(new CustomEvent("tooltip-hide"));
+            // });
 
             setMapReady(true);
-            // props.onReady?.();
         });
     });
 
@@ -272,7 +281,7 @@ export default function MapComponent() {
     return (
         <>
             <div class={styles.component} ref={mapContainer} />
-            {mapReady() && <HoverTooltip map={map!} />}
+            {mapReady() && <Tooltip map={map!} />}
             {mapReady() && <MapDataFetcher map={map!} db={mapState.db} />}
 
         </>

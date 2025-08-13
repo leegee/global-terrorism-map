@@ -4,7 +4,7 @@ import maplibregl from "maplibre-gl";
 import schema from "../../scheme.json";
 import { getEventById } from "../../lib/db";
 
-interface HoverTooltipProps {
+interface TooltipProps {
     map: maplibregl.Map;
 }
 
@@ -55,23 +55,27 @@ function PopupContent(props: { properties: Record<string, any> }) {
     );
 }
 
-export default function HoverTooltip(props: HoverTooltipProps) {
+export default function Tooltip(props: TooltipProps) {
     let popup: maplibregl.Popup | null = null;
 
     function showTip(e: CustomEvent) {
         if (!props.map) return;
 
+        if (popup) {
+            popup.remove();
+            popup = null;
+        }
+
         const { lngLat, eventId } = e.detail;
         const properties = getEventById(eventId);
         if (!properties) return;
 
-        if (!popup) {
-            popup = new maplibregl.Popup({
-                closeButton: false,
-                closeOnClick: false,
-                offset: 10,
-            });
-        }
+
+        popup = new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+            offset: 10,
+        });
 
         const container = document.createElement("div");
         render(() => <PopupContent properties={properties} />, container);
@@ -87,14 +91,14 @@ export default function HoverTooltip(props: HoverTooltipProps) {
     }
 
     onMount(() => {
-        document.addEventListener("tooltip-show", showTip);
+        document.addEventListener("tooltip-show", showTip as any);
         document.addEventListener("tooltip-hide", removeTip);
     });
 
     onCleanup(() => {
-        document.removeEventListener("tooltip-show", showTip);
+        document.removeEventListener("tooltip-show", showTip as any);
         document.removeEventListener("tooltip-hide", removeTip);
-        removeTip();
+        if (popup) popup.remove();
     });
 
     return null;
