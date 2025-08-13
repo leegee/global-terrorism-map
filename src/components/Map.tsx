@@ -252,7 +252,7 @@ export default function MapComponent(props: MapProps) {
                 map!.setLayoutProperty("events_layer", "visibility", z > 6 ? "visible" : "none");
             });
 
-            mapContainer!.addEventListener("mousemove", (e) => {
+            mapContainer.addEventListener("mousemove", (e) => {
                 const zoom = map!.getZoom();
                 if (zoom <= HEATMAP_ZOOM_LEVEL) {
                     document.dispatchEvent(new CustomEvent("tooltip-hide"));
@@ -262,7 +262,7 @@ export default function MapComponent(props: MapProps) {
                 const self = customLayer as any;
                 if (!self.pixelCoords) return;
 
-                const rect = mapContainer!.getBoundingClientRect();
+                const rect = mapContainer.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
 
@@ -289,7 +289,7 @@ export default function MapComponent(props: MapProps) {
                 }
             });
 
-            map.on("mouseleave", "events_layer", () => {
+            mapContainer.addEventListener("mouseleave", () => {
                 document.dispatchEvent(new CustomEvent("tooltip-hide"));
             });
 
