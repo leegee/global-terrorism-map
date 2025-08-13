@@ -15,7 +15,7 @@ export default function App() {
     return (
         <main class={styles.component}>
             <footer class={styles.controls}>
-                <nav class="no-space">
+                <nav class="left-round fill right-round padding small">
                     <DateRangeControl />
                     <SearchTextControl />
                 </nav>
