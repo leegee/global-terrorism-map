@@ -30,28 +30,6 @@ export default function MapComponent() {
         return (bounds.getNorth() + bounds.getSouth()) / 2;
     }
 
-    function fetchEvents() {
-        const q = mapState.q;
-        const activeRange = mapState.dateRange;
-        const [startYear, endYear] = activeRange;
-        const bounds = map.getBounds();
-        const zoom = map.getZoom();
-
-        return queryEventsLatLng(
-            mapState.db,
-            zoom < HEATMAP_ZOOM_LEVEL,
-            zoom,
-            getMapCenter(),
-            bounds.getSouth(),
-            bounds.getNorth(),
-            bounds.getWest(),
-            bounds.getEast(),
-            q,
-            startYear,
-            endYear
-        );
-    }
-
     const customLayer: CustomLayerInterface = {
         id: "events_layer",
         type: "custom",
