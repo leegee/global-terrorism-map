@@ -1,12 +1,7 @@
-import { Suspense, type Component } from 'solid-js';
+import { Component, JSX, Suspense } from 'solid-js';
 
-const App: Component = (props: { children: Element }) => {
-
-  return (
-    <>
-      <Suspense>{props.children}</Suspense>
-    </>
-  );
+const App: Component<{ children?: JSX.Element }> = (props) => {
+  return <Suspense>{props.children}</Suspense>;
 };
 
 export default App;
