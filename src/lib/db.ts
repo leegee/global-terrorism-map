@@ -1,4 +1,5 @@
 import initSqlJs, { Database, SqlJsStatic } from "sql.js";
+import { HEATMAP_ZOOM_LEVEL } from "../config";
 
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
@@ -134,7 +135,6 @@ export function queryEvents(
 
 export function queryEventsLatLng(
     db: Database,
-    shouldCluster: boolean,
     zoom: number,
     centerLat: number,
     minLat: number,
@@ -148,6 +148,7 @@ export function queryEventsLatLng(
     const start = startYear ? parseInt(startYear, 10) : 1900;
     const end = endYear ? parseInt(endYear, 10) : new Date().getFullYear();
     const qCleaned = (q ?? '').trim();
+    const shouldCluster = zoom <= HEATMAP_ZOOM_LEVEL;
 
     // const pixelRadius = Math.max(4, Math.min(20, POINT_DIAMETER_PX * (zoom / ZOOM_TO_PIXEL_FACTOR)));
     const pixelRadius = getPixelRadius(zoom);

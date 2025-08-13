@@ -1,12 +1,13 @@
 import { onMount, onCleanup, createSignal } from "solid-js";
 import maplibregl, { CustomLayerInterface } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { POINT_DIAMETER_PX, queryEventsLatLng, getPixelRadius, type Database } from "../../lib/db";
+import { POINT_DIAMETER_PX, getPixelRadius, type Database } from "../../lib/db";
 import HoverTooltip from "./HoverTooltip";
 import { baseLayerStyle } from "../../lib/map-style";
 import { mapState } from "../../store";
 import MapDataFetcher from "./MapDataFetcher";
 import styles from './Map.module.scss';
+import { HEATMAP_ZOOM_LEVEL } from "../../config";
 
 interface MapProps {
     db: Database;
@@ -16,7 +17,6 @@ interface MapProps {
 }
 
 const POINT_ALPHA = 0.75;
-const HEATMAP_ZOOM_LEVEL = 6;
 
 export default function MapComponent() {
     let mapContainer: HTMLDivElement | undefined;

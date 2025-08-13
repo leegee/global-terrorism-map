@@ -13,8 +13,6 @@ export default function MapDataFetcher(props: Props) {
 
     if (!map || !db) return null;
 
-    const HEATMAP_ZOOM_LEVEL = 6;
-
     async function fetchEvents() {
         const zoom = map.getZoom();
         const bounds = map.getBounds();
@@ -22,7 +20,6 @@ export default function MapDataFetcher(props: Props) {
 
         const events: Event[] = (await queryEventsLatLng(
             db,
-            zoom < HEATMAP_ZOOM_LEVEL,
             zoom,
             (bounds.getNorth() + bounds.getSouth()) / 2,
             bounds.getSouth(),
