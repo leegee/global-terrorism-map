@@ -4,7 +4,6 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { POINT_DIAMETER_PX, queryEventsLatLng, getPixelRadius, type Database } from "../../lib/db";
 import HoverTooltip from "./HoverTooltip";
 import { baseLayerStyle } from "../../lib/map-style";
-import { addHandleForcedSearchEvent, removeHandleForcedSearchEvent } from "../../lib/forced-search-event";
 import { mapState } from "../../store";
 import MapDataFetcher from "./MapDataFetcher";
 import styles from './Map.module.scss';
@@ -299,8 +298,6 @@ export default function MapComponent() {
                 document.dispatchEvent(new CustomEvent("tooltip-hide"));
             });
 
-            addHandleForcedSearchEvent(map.triggerRepaint);
-
             setMapReady(true);
             // props.onReady?.();
         });
@@ -308,7 +305,6 @@ export default function MapComponent() {
 
 
     onCleanup(() => {
-        removeHandleForcedSearchEvent(map.triggerRepaint);
         if (map) map.remove();
     });
 
