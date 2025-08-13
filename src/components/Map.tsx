@@ -89,9 +89,11 @@ export default function MapComponent(props: MapProps) {
             if (!self.program || !self.buffer || self.aPos < 0) return;
 
             const zoom = map.getZoom();
-            if (zoom < 6) {
+            if (zoom < 3) {
                 // return; Maybe use a heatmap
-                pointSize = 1;
+                pointSize = 2;
+            } else if (zoom < 4) {
+                pointSize = 5;
             } else if (zoom < 6) {
                 pointSize = POINT_DIAMETER_PX / 2;
             } else if (zoom < 8) {
