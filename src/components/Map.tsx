@@ -20,6 +20,7 @@ export default function MapComponent(props: MapProps) {
     let mapContainer: HTMLDivElement | undefined;
     let map: maplibregl.Map | undefined;
     const [mapReady, setMapReady] = createSignal(false);
+    let pointSize = 1;
 
     const customLayer: CustomLayerInterface = {
         id: "events_layer",
@@ -87,6 +88,16 @@ export default function MapComponent(props: MapProps) {
             const self = this as any;
             if (!self.program || !self.buffer || self.aPos < 0) return;
 
+            const zoom = map.getZoom();
+            if (zoom < 6) {
+                // return; Maybe use a heatmap
+                pointSize = 1;
+            } else if (zoom < 6) {
+                pointSize = POINT_DIAMETER_PX / 2;
+            } else if (zoom < 8) {
+                pointSize = POINT_DIAMETER_PX;
+            }
+
             const gl: WebGLRenderingContext = self.gl;
             gl.useProgram(self.program);
 
@@ -129,7 +140,7 @@ export default function MapComponent(props: MapProps) {
             gl.enableVertexAttribArray(self.aPos);
             gl.vertexAttribPointer(self.aPos, 2, gl.FLOAT, false, 0, 0);
 
-            gl.uniform1f(self.uPointSize, POINT_DIAMETER_PX);
+            gl.uniform1f(self.uPointSize, pointSize);
             // gl.uniform4f(self.uColor, 1, 0, 0, 0.25);
             gl.uniform4f(self.uColor, 1 * POINT_ALPHA, 0 * POINT_ALPHA, 0 * POINT_ALPHA, POINT_ALPHA);
 
@@ -173,7 +184,7 @@ export default function MapComponent(props: MapProps) {
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
 
-                const radius = POINT_DIAMETER_PX / 2;
+                const radius = pointSize / 2;
                 let found = false;
 
                 for (const p of self.pixelCoords) {
