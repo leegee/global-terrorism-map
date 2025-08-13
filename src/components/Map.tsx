@@ -28,6 +28,28 @@ export default function MapComponent(props: MapProps) {
         return (bounds.getNorth() + bounds.getSouth()) / 2;
     }
 
+    function fetchEvents() {
+        const q = props.q;
+        const activeRange = props.dateRange;
+        const [startYear, endYear] = activeRange;
+        const bounds = map.getBounds();
+        const zoom = map.getZoom();
+
+        return queryEventsLatLng(
+            props.db,
+            zoom < HEATMAP_ZOOM_LEVEL,
+            zoom,
+            getMapCenter(),
+            bounds.getSouth(),
+            bounds.getNorth(),
+            bounds.getWest(),
+            bounds.getEast(),
+            q,
+            startYear,
+            endYear
+        );
+    }
+
     const customLayer: CustomLayerInterface = {
         id: "events_layer",
         type: "custom",
@@ -111,24 +133,7 @@ export default function MapComponent(props: MapProps) {
 
             const canvas = gl.canvas as HTMLCanvasElement;
 
-            const q = props.q;
-            const activeRange = props.dateRange;
-            const [startYear, endYear] = activeRange;
-            const bounds = map.getBounds();
-
-            const events = queryEventsLatLng(
-                props.db,
-                zoom < HEATMAP_ZOOM_LEVEL,
-                zoom,
-                getMapCenter(),
-                bounds.getSouth(),
-                bounds.getNorth(),
-                bounds.getWest(),
-                bounds.getEast(),
-                q,
-                startYear,
-                endYear
-            );
+            const events = fetchEvents();
 
             // Project points to clip space and store pixel coords
             const coords: number[] = [];
@@ -227,20 +232,7 @@ export default function MapComponent(props: MapProps) {
 
             map.addLayer(customLayer);
             const updateData = () => {
-                const bounds = map!.getBounds();
-                const events = queryEventsLatLng(
-                    props.db,
-                    (map.getZoom() < HEATMAP_ZOOM_LEVEL),
-                    map.getZoom(),
-                    getMapCenter(),
-                    bounds.getSouth(),
-                    bounds.getNorth(),
-                    bounds.getWest(),
-                    bounds.getEast(),
-                    props.q,
-                    props.dateRange[0],
-                    props.dateRange[1]
-                );
+                const events = fetchEvents();
 
                 if (map.getZoom() < HEATMAP_ZOOM_LEVEL) {
                     // Update heatmap data
