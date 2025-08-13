@@ -1,5 +1,5 @@
-import { mapState, setMapState } from "../store";
-import { forceSearch } from "../lib/forced-search-event";
+import { mapState, setMapState } from "../../store";
+import { forceSearch } from "../../lib/forced-search-event";
 
 export default function SearchTextControl() {
     const q = () => mapState.q;

@@ -1,8 +1,8 @@
 import { onCleanup, onMount } from "solid-js";
 import { render } from "solid-js/web";
 import maplibregl from "maplibre-gl";
-import schema from "../scheme.json";
-import { getEventById } from "../lib/db";
+import schema from "../../scheme.json";
+import { getEventById } from "../../lib/db";
 
 interface HoverTooltipProps {
     map: maplibregl.Map;

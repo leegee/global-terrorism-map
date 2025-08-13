@@ -1,6 +1,6 @@
 import { createEffect, onCleanup } from "solid-js";
-import { type Event, mapState, setMapState } from "../store";
-import { type Database, queryEventsLatLng } from "../lib/db";
+import { type Event, mapState, setMapState } from "../../store";
+import { type Database, queryEventsLatLng } from "../../lib/db";
 
 interface Props {
     map: maplibregl.Map;

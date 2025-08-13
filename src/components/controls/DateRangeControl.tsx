@@ -1,4 +1,4 @@
-import { mapState, setMapState } from "../store";
+import { mapState, setMapState } from "../../store";
 
 const DB_MIN_YEAR = 1970;
 const DB_MAX_YEAR = 2022;

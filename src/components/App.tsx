@@ -1,8 +1,8 @@
 import { createEffect, onMount } from "solid-js";
 import styles from "./App.module.scss";
-import DateRangeControl from "./DateRangeControl";
-import MapComponent from "./Map";
-import SearchTextControl from "./SearchTextControl";
+import DateRangeControl from "./controls/DateRangeControl";
+import MapComponent from "./Map/Map";
+import SearchTextControl from "./controls/SearchTextControl";
 import { mapState, setMapState } from "../store";
 import { initDB } from "../lib/db";
 
