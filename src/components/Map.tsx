@@ -13,6 +13,8 @@ interface MapProps {
     onReady?: () => void;
 }
 
+const POINT_DIAMETER_PX = 8;
+
 export default function MapComponent(props: MapProps) {
     let mapContainer: HTMLDivElement | undefined;
     let map: maplibregl.Map | undefined;
@@ -122,7 +124,7 @@ export default function MapComponent(props: MapProps) {
             gl.enableVertexAttribArray(self.aPos);
             gl.vertexAttribPointer(self.aPos, 2, gl.FLOAT, false, 0, 0);
 
-            gl.uniform1f(self.uPointSize, 12);
+            gl.uniform1f(self.uPointSize, POINT_DIAMETER_PX);
             gl.uniform4f(self.uColor, 1, 0, 0, 1);
 
             gl.drawArrays(gl.POINTS, 0, coords.length / 2);
@@ -165,7 +167,7 @@ export default function MapComponent(props: MapProps) {
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
 
-                const radius = 6;
+                const radius = POINT_DIAMETER_PX / 2;
                 let found = false;
 
                 for (const p of self.pixelCoords) {
