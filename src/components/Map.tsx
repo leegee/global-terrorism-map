@@ -4,6 +4,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { queryEventsLatLng, type Database } from "../lib/db";
 import HoverTooltip from "./HoverTooltip";
 import { baseStyle } from "../lib/map-style";
+import { addHandleForcedSearchEvent } from "../lib/forced-search-event";
 
 interface MapProps {
     db: Database;
@@ -84,14 +85,20 @@ export default function MapComponent(props: MapProps) {
 
             const canvas = gl.canvas as HTMLCanvasElement;
 
+            const q = props.q;
+            const activeRange = props.dateRange;
+            const [startYear, endYear] = activeRange;
             const bounds = map.getBounds();
+
             const events = queryEventsLatLng(
                 props.db,
                 bounds.getSouth(),
                 bounds.getNorth(),
                 bounds.getWest(),
                 bounds.getEast(),
-                ""
+                q,
+                startYear,
+                endYear
             );
 
             // Project points to clip space and store pixel coords
@@ -150,11 +157,11 @@ export default function MapComponent(props: MapProps) {
             map.addLayer(customLayer);
             console.info("Custom layer added");
 
-            mapContainer!.addEventListener("mousemove", (e) => {
+            mapContainer.addEventListener("mousemove", (e) => {
                 const self = customLayer as any;
                 if (!self.pixelCoords) return;
 
-                const rect = mapContainer!.getBoundingClientRect();
+                const rect = mapContainer.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
 
@@ -167,7 +174,7 @@ export default function MapComponent(props: MapProps) {
                     if (dx * dx + dy * dy <= radius * radius) {
                         document.dispatchEvent(new CustomEvent("tooltip-show", {
                             detail: {
-                                lngLat: map!.unproject([p.x, p.y]),
+                                lngLat: map.unproject([p.x, p.y]),
                                 eventId: p.id
                             }
                         }));
@@ -181,10 +188,14 @@ export default function MapComponent(props: MapProps) {
                 }
             });
 
-        });
+            map.on("mouseleave", () => {
+                document.dispatchEvent(new CustomEvent("tooltip-hide"));
+            });
 
-        setMapReady(true);
-        props.onReady?.();
+            addHandleForcedSearchEvent(() => map.triggerRepaint());
+            setMapReady(true);
+            props.onReady?.();
+        });
     });
 
     onCleanup(() => {
