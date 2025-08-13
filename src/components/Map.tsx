@@ -3,6 +3,7 @@ import maplibregl, { CustomLayerInterface } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { queryEventsLatLng, type Database } from "../lib/db";
 import HoverTooltip from "./HoverTooltip";
+import { baseStyle } from "../lib/map-style";
 
 interface MapProps {
     db: Database;
@@ -135,21 +136,12 @@ export default function MapComponent(props: MapProps) {
 
         map = new maplibregl.Map({
             container: mapContainer,
-            style: {
-                version: 8,
-                sources: {
-                    osm: {
-                        type: "raster",
-                        tiles: ["https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"],
-                        tileSize: 256,
-                        attribution: "© OpenStreetMap contributors",
-                    },
-                },
-                layers: [
-                    { id: "background", type: "background", paint: { "background-color": "#000000" } },
-                    { id: "osm", type: "raster", source: "osm" },
-                ],
-            },
+            style: baseStyle as any,
+            maxZoom: 13,
+            attributionControl: false,
+            renderWorldCopies: false,
+            // center: [0, 0],
+            // zoom: 2,
             center: [-0.1276, 51.5074],
             zoom: 6,
         });
