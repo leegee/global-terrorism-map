@@ -1,8 +1,22 @@
 import { mapState, setMapState } from "../store";
 
+const DB_MIN_YEAR = 1970;
+const DB_MAX_YEAR = 2022;
+
 export default function DateRangeControl() {
-    const minYear = () => mapState.dateRange[0];
-    const maxYear = () => mapState.dateRange[1];
+    const minYear = () => {
+        const v = Number(mapState.dateRange?.[0] ?? DB_MIN_YEAR);
+        const max = Number(mapState.dateRange?.[1] ?? DB_MAX_YEAR);
+        const clamped = Math.min(Math.max(v, DB_MIN_YEAR), max);
+        return clamped.toString();
+    };
+
+    const maxYear = () => {
+        const v = Number(mapState.dateRange?.[1] ?? DB_MAX_YEAR);
+        const min = Number(mapState.dateRange?.[0] ?? DB_MIN_YEAR);
+        const clamped = Math.max(Math.min(v, DB_MAX_YEAR), min);
+        return clamped.toString();
+    };
 
     const setRange = (newRange: [string, string]) => {
         const [min, max] = newRange;
