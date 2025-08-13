@@ -10,13 +10,6 @@ import HoverTooltip from "./HoverTooltip";
 import MapDataFetcher from "./MapDataFetcher";
 import styles from './Map.module.scss';
 
-interface MapProps {
-    db: Database;
-    dateRange: [string, string];
-    q: string;
-    onReady?: () => void;
-}
-
 const POINT_ALPHA = 0.75;
 
 export default function MapComponent() {
