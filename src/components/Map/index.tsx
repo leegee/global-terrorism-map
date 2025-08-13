@@ -236,6 +236,7 @@ export default function MapComponent() {
                     const dx = mouseX - p.x;
                     const dy = mouseY - p.y;
                     if (dx * dx + dy * dy <= radius * radius) {
+
                         document.dispatchEvent(new CustomEvent("tooltip-show", {
                             detail: {
                                 lngLat: map!.unproject([p.x, p.y]),
@@ -247,7 +248,10 @@ export default function MapComponent() {
                     }
                 }
 
-                if (!found) {
+                if (found) {
+                    map.getCanvas().style.cursor = 'pointer';
+                } else {
+                    map.getCanvas().style.cursor = '';
                     document.dispatchEvent(new CustomEvent("tooltip-hide"));
                 }
             });
