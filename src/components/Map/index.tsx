@@ -1,13 +1,14 @@
 import { onMount, onCleanup, createSignal } from "solid-js";
 import maplibregl, { CustomLayerInterface } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+import { baseLayerStyle } from "../../lib/map-style";
+import { HEATMAP_ZOOM_LEVEL } from "../../config";
+import { mapState } from "../../store";
 import { POINT_DIAMETER_PX, getPixelRadius, type Database } from "../../lib/db";
 import HoverTooltip from "./HoverTooltip";
-import { baseLayerStyle } from "../../lib/map-style";
-import { mapState } from "../../store";
 import MapDataFetcher from "./MapDataFetcher";
 import styles from './Map.module.scss';
-import { HEATMAP_ZOOM_LEVEL } from "../../config";
 
 interface MapProps {
     db: Database;
