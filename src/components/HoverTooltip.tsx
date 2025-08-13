@@ -40,9 +40,11 @@ function PopupContent(props: { properties: Record<string, any> }) {
                             value = value === 1 || value === true ? "Yes" : "No";
                         }
 
+                        const printableLabel = label.replace(/type$/ig, '');
+
                         return (
                             <tr>
-                                <th>{label}</th>
+                                <th>{printableLabel}</th>
                                 <td>{value}</td>
                             </tr>
                         );
