@@ -32,8 +32,8 @@ function PopupContent(props: { properties: Record<string, any> }) {
                         if (["latitude", "longitude"].includes(key)) return null;
 
                         let value = props.properties[key];
-                        if (value === null || value === undefined || value === "") {
-                            value = key === "summary" ? "" : "N/A";
+                        if (value === 0 || value === "0" || value === null || value === undefined || value === "") {
+                            return;
                         }
 
                         if (key === "claimed" || key === "success") {
