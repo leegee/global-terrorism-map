@@ -5,6 +5,7 @@ import { POINT_DIAMETER_PX, queryEventsLatLng, getPixelRadius, type Database } f
 import HoverTooltip from "./HoverTooltip";
 import { baseStyle } from "../lib/map-style";
 import { addHandleForcedSearchEvent, removeHandleForcedSearchEvent } from "../lib/forced-search-event";
+import { mapState, setMapState } from "../store";
 
 interface MapProps {
     db: Database;
@@ -16,7 +17,7 @@ interface MapProps {
 const POINT_ALPHA = 0.75;
 const HEATMAP_ZOOM_LEVEL = 6;
 
-export default function MapComponent(props: MapProps) {
+export default function MapComponent() {
     let mapContainer: HTMLDivElement | undefined;
     let map: maplibregl.Map | undefined;
     const [mapReady, setMapReady] = createSignal(false);
@@ -29,14 +30,14 @@ export default function MapComponent(props: MapProps) {
     }
 
     function fetchEvents() {
-        const q = props.q;
-        const activeRange = props.dateRange;
+        const q = mapState.q;
+        const activeRange = mapState.dateRange;
         const [startYear, endYear] = activeRange;
         const bounds = map.getBounds();
         const zoom = map.getZoom();
 
         return queryEventsLatLng(
-            props.db,
+            mapState.db,
             zoom < HEATMAP_ZOOM_LEVEL,
             zoom,
             getMapCenter(),
@@ -115,10 +116,8 @@ export default function MapComponent(props: MapProps) {
         render() {
             const self = this as any;
             if (!self.program || !self.buffer || self.aPos < 0) return;
-
             const zoom = map.getZoom();
             if (zoom < 3) {
-                // return; Maybe use a heatmap
                 pointSize = 2;
             } else if (zoom < 4) {
                 pointSize = 5;
@@ -306,7 +305,7 @@ export default function MapComponent(props: MapProps) {
             addHandleForcedSearchEvent(map.triggerRepaint);
 
             setMapReady(true);
-            props.onReady?.();
+            // props.onReady?.();
         });
     });
 

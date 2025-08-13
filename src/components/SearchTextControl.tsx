@@ -5,7 +5,7 @@ type DateRange = [string, string];
 
 interface InputTextControlProps {
     q?: string;
-    onChange: Setter<string>;
+    onChange: (q: string) => void;
 }
 
 

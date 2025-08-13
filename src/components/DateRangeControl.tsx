@@ -4,7 +4,7 @@ type DateRange = [string, string];
 
 interface DateRangeControlProps {
     initialRange?: DateRange;
-    onChange: Setter<DateRange>;
+    onChange: (range: DateRange) => void;
 }
 
 export default function DateRangeControl(props: DateRangeControlProps) {

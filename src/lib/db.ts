@@ -129,8 +129,6 @@ export function queryEvents(
     //     "using bind", [minLat, maxLat, minLon, maxLon, start, end]
     // );
 
-    console.log(fanned.length)
-
     return fanned;
 }
 
