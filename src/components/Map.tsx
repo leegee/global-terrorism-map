@@ -15,6 +15,7 @@ interface MapProps {
 
 const POINT_DIAMETER_PX = 12;
 const POINT_ALPHA = 0.75;
+const HEATMAP_ZOOM_LEVEL = 6;
 
 export default function MapComponent(props: MapProps) {
     let mapContainer: HTMLDivElement | undefined;
@@ -159,6 +160,7 @@ export default function MapComponent(props: MapProps) {
         },
     };
 
+
     onMount(() => {
         if (!mapContainer) return;
 
@@ -168,56 +170,91 @@ export default function MapComponent(props: MapProps) {
             maxZoom: 13,
             attributionControl: false,
             renderWorldCopies: false,
-            // center: [0, 0],
-            // zoom: 2,
             center: [-0.1276, 51.5074],
             zoom: 6,
         });
 
         map.on("load", () => {
+            // --- Add heatmap source & layer ---
+            map.addSource("events-heat", {
+                type: "geojson",
+                data: {
+                    type: "FeatureCollection",
+                    features: [], // initially empty
+                },
+            });
+
+            map.addLayer({
+                id: "events-heat",
+                type: "heatmap",
+                source: "events-heat",
+                maxzoom: HEATMAP_ZOOM_LEVEL,
+                paint: {
+                    "heatmap-weight": ["interpolate", ["linear"], ["get", "count"], 0, 0, 1, 1],
+                    "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 3],
+                    "heatmap-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["heatmap-density"],
+                        0, "rgba(0,0,255, 0)",
+                        0.1, "royalblue",
+                        0.3, "cyan",
+                        0.5, "lime",
+                        0.7, "yellow",
+                        1, "red"
+                    ],
+                    "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 6, 20],
+                    // "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 6, 0],
+                    "heatmap-opacity": 0.4
+                },
+            });
+
             map.addLayer(customLayer);
-            console.info("Custom layer added");
 
-            mapContainer.addEventListener("mousemove", (e) => {
-                const self = customLayer as any;
-                if (!self.pixelCoords) return;
+            const updateData = () => {
+                const bounds = map!.getBounds();
+                const events = queryEventsLatLng(
+                    props.db,
+                    bounds.getSouth(),
+                    bounds.getNorth(),
+                    bounds.getWest(),
+                    bounds.getEast(),
+                    props.q,
+                    props.dateRange[0],
+                    props.dateRange[1]
+                );
 
-                const rect = mapContainer.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
+                if (map.getZoom() <= HEATMAP_ZOOM_LEVEL) {
+                    // Update heatmap data
+                    const features = events.map(ev => ({
+                        type: "Feature",
+                        geometry: { type: "Point", coordinates: [ev.longitude, ev.latitude] },
+                        properties: { count: 1 },
+                    }) as any);
 
-                const radius = pointSize / 2;
-                let found = false;
-
-                for (const p of self.pixelCoords) {
-                    const dx = mouseX - p.x;
-                    const dy = mouseY - p.y;
-                    if (dx * dx + dy * dy <= radius * radius) {
-                        document.dispatchEvent(new CustomEvent("tooltip-show", {
-                            detail: {
-                                lngLat: map.unproject([p.x, p.y]),
-                                eventId: p.id
-                            }
-                        }));
-                        found = true;
-                        break;
-                    }
+                    (map!.getSource("events-heat") as maplibregl.GeoJSONSource).setData({
+                        type: "FeatureCollection",
+                        features,
+                    });
                 }
+                map!.triggerRepaint();
+            };
 
-                if (!found) {
-                    document.dispatchEvent(new CustomEvent("tooltip-hide"));
-                }
+            // Initial load
+            updateData();
+
+            map.on("moveend", updateData);
+            map.on("zoom", () => {
+                const z = map!.getZoom();
+                map!.setLayoutProperty("events-heat", "visibility", z <= 6 ? "visible" : "none");
+                map!.setLayoutProperty("events_layer", "visibility", z > 6 ? "visible" : "none");
             });
 
-            map.on("mouseleave", () => {
-                document.dispatchEvent(new CustomEvent("tooltip-hide"));
-            });
-
-            addHandleForcedSearchEvent(() => map.triggerRepaint());
             setMapReady(true);
             props.onReady?.();
         });
     });
+
 
     onCleanup(() => {
         if (map) map.remove();
