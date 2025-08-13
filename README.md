@@ -12,6 +12,10 @@ The older non-GL layer:
 
 ![The World](./README/no-custom-layer.png)
 
+## Overview
+
+Uses an SQLite instance in the browser and a custom GL layer for MapLibre-GL.
+
 ## Usage
 
 ### Data
