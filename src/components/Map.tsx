@@ -1,12 +1,20 @@
-import { onMount, onCleanup } from "solid-js";
+import { onMount, onCleanup, createSignal } from "solid-js";
 import maplibregl, { CustomLayerInterface } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { queryEventsLatLng } from "../lib/db";
-import type { Database } from "sql.js";
+import { queryEventsLatLng, type Database } from "../lib/db";
+import HoverTooltip from "./HoverTooltip";
 
-export default function MapComponent(props: { db: Database }) {
+interface MapProps {
+    db: Database;
+    dateRange: [string, string];
+    q: string;
+    onReady?: () => void;
+}
+
+export default function MapComponent(props: MapProps) {
     let mapContainer: HTMLDivElement | undefined;
     let map: maplibregl.Map | undefined;
+    const [mapReady, setMapReady] = createSignal(false);
 
     const customLayer: CustomLayerInterface = {
         id: "events_layer",
@@ -18,7 +26,6 @@ export default function MapComponent(props: { db: Database }) {
             self.map = mapInstance;
             self.gl = gl;
 
-            // Vertex shader
             const vertexSource = `
         attribute vec2 a_pos;
         uniform float u_pointSize;
@@ -28,7 +35,6 @@ export default function MapComponent(props: { db: Database }) {
         }
       `;
 
-            // Fragment shader: circular points
             const fragmentSource = `
         precision mediump float;
         uniform vec4 u_color;
@@ -124,14 +130,6 @@ export default function MapComponent(props: { db: Database }) {
         },
     };
 
-    function fetchAndShowPopup(eventid: string, x: number, y: number) {
-        const popup = document.getElementById("popup")!;
-        popup.style.left = x + "px";
-        popup.style.top = y + "px";
-        popup.textContent = `Event ID: ${eventid}`;
-        popup.style.display = "block";
-    }
-
     onMount(() => {
         if (!mapContainer) return;
 
@@ -160,29 +158,41 @@ export default function MapComponent(props: { db: Database }) {
             map.addLayer(customLayer);
             console.info("Custom layer added");
 
-            mapContainer.addEventListener("mousemove", (e) => {
+            mapContainer!.addEventListener("mousemove", (e) => {
                 const self = customLayer as any;
                 if (!self.pixelCoords) return;
 
-                const rect = mapContainer.getBoundingClientRect();
+                const rect = mapContainer!.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
 
                 const radius = 6;
+                let found = false;
+
                 for (const p of self.pixelCoords) {
                     const dx = mouseX - p.x;
                     const dy = mouseY - p.y;
                     if (dx * dx + dy * dy <= radius * radius) {
-                        fetchAndShowPopup(p.id, e.clientX, e.clientY);
-                        return;
+                        document.dispatchEvent(new CustomEvent("tooltip-show", {
+                            detail: {
+                                lngLat: map!.unproject([p.x, p.y]),
+                                eventId: p.id
+                            }
+                        }));
+                        found = true;
+                        break;
                     }
                 }
 
-                // hide popup if not hovering
-                const popup = document.getElementById("popup")!;
-                popup.style.display = "none";
+                if (!found) {
+                    document.dispatchEvent(new CustomEvent("tooltip-hide"));
+                }
             });
+
         });
+
+        setMapReady(true);
+        props.onReady?.();
     });
 
     onCleanup(() => {
@@ -192,18 +202,7 @@ export default function MapComponent(props: { db: Database }) {
     return (
         <>
             <div style={{ width: "100vw", height: "100vh" }} ref={mapContainer} />
-            <div
-                id="popup"
-                style={{
-                    position: "absolute",
-                    display: "none",
-                    background: "white",
-                    padding: "4px 8px",
-                    color: 'black',
-                    border: "1px solid black",
-                    "pointer-events": "none",
-                }}
-            />
+            {mapReady() && <HoverTooltip map={map!} />}
         </>
     );
 }

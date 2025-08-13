@@ -1,6 +1,7 @@
 import { onCleanup, onMount } from "solid-js";
 import maplibregl from "maplibre-gl";
 import schema from '../scheme.json';
+import { getEventById } from "../lib/db";
 // import styles from "./HoverTooltip.module.scss";
 
 interface HoverTooltipProps {
@@ -27,7 +28,10 @@ export default function HoverTooltip(props: HoverTooltipProps) {
     function showTip(e: CustomEvent) {
         if (!props.map) return;
 
-        const { lngLat, properties } = e.detail;
+        const { lngLat, eventId } = e.detail;
+        console.log('Enter show tip', e.detail)
+
+        const properties = getEventById(eventId);
 
         if (!popup) {
             popup = new maplibregl.Popup({

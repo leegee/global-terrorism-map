@@ -3,6 +3,8 @@ import initSqlJs, { Database, SqlJsStatic } from "sql.js";
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
 
+export type { Database };
+
 export async function initDB(sqliteFileUrl: string): Promise<Database> {
     if (db) return db;
 
@@ -197,3 +199,16 @@ export function queryEventsLatLng(
     return fanned;
 }
 
+export function getEventById(eventId: number): { [key: string]: any } | null {
+    const stmt = db.prepare(`SELECT * FROM events WHERE eventid = ? LIMIT 1`);
+
+    try {
+        stmt.bind([eventId]);
+        if (stmt.step()) {
+            return stmt.getAsObject();
+        }
+        return null;
+    } finally {
+        stmt.free();
+    }
+}
