@@ -9,16 +9,14 @@ export default function SearchTextControl() {
     };
 
     return (
-        <nav class="no-space">
-            <div class="small field border left-round">
-                <input
-                    type="text"
-                    placeholder="Search"
-                    value={q()}
-                    onInput={e => onBlur(e.currentTarget.value)}
-                />
-            </div>
-            <button class="right-round" onClick={forceSearch}>Search</button>
-        </nav>
+        <div class="field label border no-padding small round">
+            <input
+                type="text"
+                placeholder=" "
+                value={q()}
+                onInput={e => onBlur(e.currentTarget.value)}
+            />
+            <label>Search terms</label>
+        </div>
     );
 }
