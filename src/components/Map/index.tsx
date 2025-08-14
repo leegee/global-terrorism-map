@@ -2,14 +2,13 @@ import { onMount, onCleanup, createSignal } from "solid-js";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { baseLayerStyle } from "../../lib/map-style";
+import { createPointsLayer } from "./points-layer";
+import { getPixelRadius } from "../../lib/db";
 import { HEATMAP_ZOOM_LEVEL } from "../../config";
 import { mapState } from "../../store";
-import { getPixelRadius } from "../../lib/db";
-import Tooltip from "./Tooltip";
 import MapDataFetcher from "./MapDataFetcher";
 import styles from "./Map.module.scss";
-import { createPointsLayer } from "./points-layer";
+import Tooltip from "./Tooltip";
 
 const POINT_ALPHA = 0.75;
 
@@ -51,7 +50,34 @@ export default function MapComponent() {
     onMount(() => {
         map = new maplibregl.Map({
             container: mapContainer,
-            style: baseLayerStyle as any,
+            style: {
+                version: 8 as const,
+                glyphs: "fonts/{fontstack}/{range}.pbf",
+                sources: {
+                    cartoDark: {
+                        type: "raster",
+                        tiles: [
+                            "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+                            "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+                            "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+                            "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+                            "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+                        ],
+                        tileSize: 256,
+                        attribution:
+                            '© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                    },
+                },
+                layers: [
+                    {
+                        id: "cartoDarkLayer",
+                        type: "raster",
+                        source: "cartoDark",
+                        minzoom: 0,
+                        maxzoom: 19,
+                    },
+                ],
+            },
             maxZoom: 13,
             attributionControl: false,
             renderWorldCopies: false,
